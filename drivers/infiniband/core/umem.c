@@ -68,6 +68,40 @@ static void __ib_umem_release(struct ib_device *dev, struct ib_umem *umem, int d
 
 }
 
+static int handle_pfn_pages(struct mm_struct *mm, struct scatterlist *sg,
+			    struct ib_umem *umem,
+			    unsigned long start, unsigned long length)
+{
+	int i = 0;
+	struct vm_area_struct *vma = NULL;
+	unsigned long pfn;
+
+	umem->nmap = (length + PAGE_SIZE - 1) / PAGE_SIZE;
+
+	do {
+		vma = find_vma(mm, start);
+		if (!vma || !(vma->vm_flags & VM_PFNMAP))
+			return -EFAULT;
+
+		sg[i].page_link = 0;
+
+		if (follow_pfn(vma, start, &pfn))
+			return -EINVAL;
+
+		sg[i].dma_address = pfn << PAGE_SHIFT;
+		sg[i].length = min_t(unsigned, length, vma->vm_end - start);
+		sg[i].dma_length = sg[i].length;
+		sg[i].offset = 0;
+
+		length -= sg[i].dma_length;
+		start += sg[i].dma_length;
+		i++;
+
+	} while (length);
+
+	return 0;
+}
+
 /**
  * ib_umem_get - Pin and DMA map userspace memory.
  *
@@ -181,6 +215,12 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 				     min_t(unsigned long, npages,
 					   PAGE_SIZE / sizeof (struct page *)),
 				     1, !umem->writable, page_list, vma_list);
+
+		if (ret == -EFAULT) {
+			ret = handle_pfn_pages(current->mm, sg_list_start, umem,
+					       cur_base, size);
+			goto out;
+		}
 
 		if (ret < 0)
 			goto out;
