@@ -102,6 +102,17 @@ static int handle_pfn_pages(struct mm_struct *mm, struct scatterlist *sg,
 	return 0;
 }
 
+static int check_lock_limit(int npages)
+{
+	unsigned long locked     = npages + current->mm->pinned_vm;
+	unsigned long lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+
+	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK))
+		return ENOMEM;
+
+	return locked;
+}
+
 /**
  * ib_umem_get - Pin and DMA map userspace memory.
  *
@@ -120,8 +131,7 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 	struct ib_umem *umem;
 	struct page **page_list;
 	struct vm_area_struct **vma_list;
-	unsigned long locked;
-	unsigned long lock_limit;
+	unsigned long locked = 0;
 	unsigned long cur_base;
 	unsigned long npages;
 	int ret;
@@ -188,14 +198,6 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 
 	down_write(&current->mm->mmap_sem);
 
-	locked     = npages + current->mm->pinned_vm;
-	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-
-	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
-		ret = -ENOMEM;
-		goto out;
-	}
-
 	cur_base = addr & PAGE_MASK;
 
 	if (npages == 0) {
@@ -210,18 +212,23 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 	need_release = 1;
 	sg_list_start = umem->sg_head.sgl;
 
+	ret = handle_pfn_pages(current->mm, sg_list_start, umem,
+			       cur_base, size);
+
+	if (ret == 0 || ret != -EFAULT)
+		goto out;
+
+	locked = check_lock_limit(npages);
+	if (locked < 0) {
+		ret = locked;
+		goto out;
+	}
+
 	while (npages) {
 		ret = get_user_pages(current, current->mm, cur_base,
 				     min_t(unsigned long, npages,
 					   PAGE_SIZE / sizeof (struct page *)),
 				     1, !umem->writable, page_list, vma_list);
-
-		if (ret == -EFAULT) {
-			ret = handle_pfn_pages(current->mm, sg_list_start, umem,
-					       cur_base, size);
-			goto out;
-		}
-
 		if (ret < 0)
 			goto out;
 
