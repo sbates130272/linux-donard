@@ -126,6 +126,7 @@ fs/autofs4/autofs4.ko
 fs/overlayfs/*
 fs/udf/*
 lib/*
+net/6lowpan/*
 net/802/*
 net/8021q/*
 net/9p/*
