@@ -6,6 +6,10 @@ linux (3.17.0-0.1) UNRELEASED; urgency=low
 
   [ Upstream Kernel Changes ]
 
+  * rebase to v3.17-rc7
+
+  [ Upstream Kernel Changes ]
+
   * rebase to v3.17-rc6
 
   [ Upstream Kernel Changes ]
