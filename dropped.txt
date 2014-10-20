@@ -1,14 +1,11 @@
-UBUNTU: SAUCE: (no-up) Sony laptop: Some Sony Vaia laptops do not enable wwan power by default.
-UBUNTU: SAUCE: (no-up) vfs: Add a trace point in the mark_inode_dirty function
-UBUNTU: SAUCE: (no-up) tools/hv: add basic Makefile
-UBUNTU: SAUCE: hv: Add vss daemon to Makefile
-UBUNTU: SAUCE: powerpc/powernv: Add calls to support little endian
-UBUNTU: ubuntu: aufs3 -- (no-up) aufs3-mmap.patch
-UBUNTU: SAUCE: fsl_qbman: Add drivers for Freescale DPAA Qman & Bman
-UBUNTU: SAUCE: fsl_pme2: Add support for DPAA PME
-UBUNTU: SAUCE: fmd: FMD14 integration
-UBUNTU: SAUCE: net: Add support for handling queueing in hardware
-UBUNTU: SAUCE: net/flow: remove sleeping and deferral mechanism from flow_cache_flush
-UBUNTU: SAUCE: dpaa_eth: Ethernet driver for Freescale QorIQ DPA Architecture
-UBUNTU: SAUCE: fix fmd headers
+UBUNTU: SAUCE: (no-up) dell-wmi: Demote unknown WMI event message to pr_debug
+UBUNTU: SAUCE: (no-up) arm64: dts: Add X-Gene reboot driver dts node
+UBUNTU: SAUCE: (no-up) Add documentation for generic SYSCON reboot driver.
+UBUNTU: SAUCE: fix perf_regs definitions for arm64
+UBUNTU: SAUCE: aufs3 -- (no-up) aufs3-mmap.patch
+Revert "UBUNTU: SAUCE: aufs3 -- (no-up) aufs3-mmap.patch"
+UBUNTU: SAUCE: aufs3 -- (no-up) aufs3-mmap.patch
+UBUNTU: SAUCE: aufs3 -- avoid aufs3-mmap.patch include hell for arm64
+UBUNTU: SAUCE: (no-up) irqchip:gic: change access of gicc_ctrl register to read modify write.
+UBUNTU: SAUCE: (no-up) PCI: Increase BAR size quirk for IBM ipr SAS Crocodile adapters
 
