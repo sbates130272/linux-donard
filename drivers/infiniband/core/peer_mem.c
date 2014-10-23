@@ -37,9 +37,55 @@
 static DEFINE_MUTEX(peer_memory_mutex);
 static LIST_HEAD(peer_memory_list);
 
+/* Caller should be holding the peer client lock, ib_peer_client->lock */
+static struct core_ticket *ib_peer_search_context(struct ib_peer_memory_client *ib_peer_client,
+						  u64 key)
+{
+	struct core_ticket *core_ticket;
+
+	list_for_each_entry(core_ticket, &ib_peer_client->core_ticket_list,
+			    ticket_list) {
+		if (core_ticket->key == key)
+			return core_ticket;
+	}
+
+	return NULL;
+}
+
 static int ib_invalidate_peer_memory(void *reg_handle, u64 core_context)
 {
-	return -ENOSYS;
+	struct ib_peer_memory_client *ib_peer_client = reg_handle;
+	struct invalidation_ctx *invalidation_ctx;
+	struct core_ticket *core_ticket;
+	int need_unlock = 1;
+
+	mutex_lock(&ib_peer_client->lock);
+	core_ticket = ib_peer_search_context(ib_peer_client, core_context);
+	if (!core_ticket)
+		goto out;
+
+	invalidation_ctx = (struct invalidation_ctx *)core_ticket->context;
+	/* If context is not ready yet, mark it to be invalidated */
+	if (!invalidation_ctx->func) {
+		invalidation_ctx->peer_invalidated = 1;
+		goto out;
+	}
+	invalidation_ctx->func(invalidation_ctx->cookie,
+					invalidation_ctx->umem, 0, 0);
+	if (invalidation_ctx->inflight_invalidation) {
+		/* init the completion to wait on before letting other thread to run */
+		init_completion(&invalidation_ctx->comp);
+		mutex_unlock(&ib_peer_client->lock);
+		need_unlock = 0;
+		wait_for_completion(&invalidation_ctx->comp);
+	}
+
+	kfree(invalidation_ctx);
+out:
+	if (need_unlock)
+		mutex_unlock(&ib_peer_client->lock);
+
+	return 0;
 }
 
 static int ib_peer_insert_context(struct ib_peer_memory_client *ib_peer_client,
@@ -117,11 +163,30 @@ int ib_peer_create_invalidation_ctx(struct ib_peer_memory_client *ib_peer_mem, s
 void ib_peer_destroy_invalidation_ctx(struct ib_peer_memory_client *ib_peer_mem,
 				      struct invalidation_ctx *invalidation_ctx)
 {
-	mutex_lock(&ib_peer_mem->lock);
-	ib_peer_remove_context(ib_peer_mem, invalidation_ctx->context_ticket);
-	mutex_unlock(&ib_peer_mem->lock);
+	int peer_callback;
+	int inflight_invalidation;
 
-	kfree(invalidation_ctx);
+	/* If we are under peer callback lock was already taken.*/
+	if (!invalidation_ctx->peer_callback)
+		mutex_lock(&ib_peer_mem->lock);
+	ib_peer_remove_context(ib_peer_mem, invalidation_ctx->context_ticket);
+	/* make sure to check inflight flag after took the lock and remove from tree.
+	 * in addition, from that point using local variables for peer_callback and
+	 * inflight_invalidation as after the complete invalidation_ctx can't be accessed
+	 * any more as it may be freed by the callback.
+	 */
+	peer_callback = invalidation_ctx->peer_callback;
+	inflight_invalidation = invalidation_ctx->inflight_invalidation;
+	if (inflight_invalidation)
+		complete(&invalidation_ctx->comp);
+
+	/* On peer callback lock is handled externally */
+	if (!peer_callback)
+		mutex_unlock(&ib_peer_mem->lock);
+
+	/* in case under callback context or callback is pending let it free the invalidation context */
+	if (!peer_callback && !inflight_invalidation)
+		kfree(invalidation_ctx);
 }
 static int ib_memory_peer_check_mandatory(const struct peer_memory_client
 						     *peer_client)
@@ -208,13 +273,19 @@ void ib_unregister_peer_memory_client(void *reg_handle)
 EXPORT_SYMBOL(ib_unregister_peer_memory_client);
 
 struct ib_peer_memory_client *ib_get_peer_client(struct ib_ucontext *context, unsigned long addr,
-						 size_t size, void **peer_client_context)
+						 size_t size, unsigned long peer_mem_flags,
+						 void **peer_client_context)
 {
 	struct ib_peer_memory_client *ib_peer_client;
 	int ret;
 
 	mutex_lock(&peer_memory_mutex);
 	list_for_each_entry(ib_peer_client, &peer_memory_list, core_peer_list) {
+		/* In case peer requires invalidation it can't own memory which doesn't support it */
+		if (ib_peer_client->invalidation_required &&
+		    (!(peer_mem_flags & IB_PEER_MEM_INVAL_SUPP)))
+			continue;
+
 		ret = ib_peer_client->peer_mem->acquire(addr, size,
 						   context->peer_mem_private_data,
 						   context->peer_mem_name,
