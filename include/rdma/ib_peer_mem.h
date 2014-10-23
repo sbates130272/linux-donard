@@ -3,6 +3,16 @@
 
 #include <rdma/peer_mem.h>
 
+struct ib_peer_memory_statistics {
+	atomic64_t num_alloc_mrs;
+	atomic64_t num_dealloc_mrs;
+	atomic64_t num_reg_pages;
+	atomic64_t num_dereg_pages;
+	atomic64_t num_reg_bytes;
+	atomic64_t num_dereg_bytes;
+	unsigned long num_free_callbacks;
+};
+
 struct ib_ucontext;
 struct ib_umem;
 struct invalidation_ctx;
@@ -17,6 +27,9 @@ struct ib_peer_memory_client {
 	struct mutex lock;
 	struct list_head   core_ticket_list;
 	u64	last_ticket;
+	struct kobject *kobj;
+	struct attribute_group peer_mem_attr_group;
+	struct ib_peer_memory_statistics stats;
 };
 
 enum ib_peer_mem_flags {

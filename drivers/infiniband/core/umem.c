@@ -87,6 +87,9 @@ static struct ib_umem *peer_umem_get(struct ib_peer_memory_client *ib_peer_mem,
 	if (ret)
 		goto put_pages;
 
+	atomic64_add(umem->nmap, &ib_peer_mem->stats.num_reg_pages);
+	atomic64_add(umem->nmap * umem->page_size, &ib_peer_mem->stats.num_reg_bytes);
+	atomic64_inc(&ib_peer_mem->stats.num_alloc_mrs);
 	return umem;
 
 put_pages:
@@ -115,6 +118,9 @@ static void peer_umem_release(struct ib_umem *umem)
 			    umem->context->device->dma_device);
 	peer_mem->put_pages(&umem->sg_head,
 			    umem->peer_mem_client_context);
+	atomic64_add(umem->nmap, &ib_peer_mem->stats.num_dereg_pages);
+	atomic64_add(umem->nmap * umem->page_size, &ib_peer_mem->stats.num_dereg_bytes);
+	atomic64_inc(&ib_peer_mem->stats.num_dealloc_mrs);
 	ib_put_peer_client(ib_peer_mem, umem->peer_mem_client_context);
 	kfree(umem);
 }
