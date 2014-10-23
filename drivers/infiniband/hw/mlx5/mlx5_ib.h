@@ -85,6 +85,8 @@ enum mlx5_ib_mad_ifc_flags {
 	MLX5_MAD_IFC_NET_VIEW		= 4,
 };
 
+struct mlx5_ib_peer_id;
+
 struct mlx5_ib_ucontext {
 	struct ib_ucontext	ibucontext;
 	struct list_head	db_page_list;
@@ -326,6 +328,14 @@ struct mlx5_ib_mr {
 	struct mlx5_create_mkey_mbox_out out;
 	struct mlx5_core_sig_ctx    *sig;
 	int			live;
+	struct mlx5_ib_peer_id *peer_id;
+	atomic_t      invalidated;
+	struct completion invalidation_comp;
+};
+
+struct mlx5_ib_peer_id {
+	struct completion comp;
+	struct mlx5_ib_mr *mr;
 };
 
 struct mlx5_ib_fast_reg_page_list {
