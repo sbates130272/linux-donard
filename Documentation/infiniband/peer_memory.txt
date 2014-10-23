@@ -1,0 +1,64 @@
+Peer-Direct technology allows RDMA operations to directly target
+memory in external hardware devices, such as GPU cards, SSD based
+storage, dedicated ASIC accelerators, etc.
+
+This technology allows RDMA-based (over InfiniBand/RoCE) application
+to avoid unneeded data copying when sharing data between peer hardware
+devices.
+
+This file contains documentation for the sysfs interface provided by
+the feature. For documentation of the kernel level interface that peer
+memory clients should implement, please refer to the API documentation
+in include/rdma/peer_mem.h
+
+From the user application perspective, it is free to perform memory
+registration using pointers and handles provided by peer memory
+clients (i.e. OpenCL, Cuda, FPGA-specific handles, etc.). The kernel
+will transparently select the appropriate peer memory client to
+perform the memory registration, as needed.
+
+
+The peer-memory subsystem allows the user to monitor the current usage
+of the technology through a basic sysfs interface. For each peer
+memory client (i.e. GPU type, FPGA, etc.), the following files are
+created:
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/version - the version string
+  of the peer memory client
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_alloc_mrs - the number
+  of memory regions allocated using this peers memory. Note that this
+  counter is not decreased during de-registration of memory regions,
+  it is monotonically increasing. To get the number of memory regions
+  currently allocated on this peer, subtract the value of
+  num_dealloc_mrs from this counter.
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_dealloc_mrs - the number
+  of memory regions de-allocated, and were originally using peer
+  memory.
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_reg_pages - the amount
+  of peer_name's memory pages that have been mapped through peer
+  direct. Note that this is a monotonically increasing counter. To get
+  the number of pages currently mapped, subtract the value of
+  num_dereg_pages from this counter. Also, pay attention to the fact
+  that this counter is using device pages, which might differ in size
+  from the host memory page size.
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_dereg_pages - the amount
+  of peer memory pages that have been unmapped through peer direct for
+  peer_name.
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_reg_bytes - the number
+  of bytes that have been mapped through peer direct from
+  peer_name. Note that this is a monotonically increasing counter. To
+  get the number of bytes currently mapped, subtract the value of
+  num_dereg_bytes from this counter.
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_dereg_bytes - the number
+  of bytes that have been unmapped through peer direct from peer_name.
+
+* /sys/kernel/infiniband/memory_peers/<peer_name>/num_free_callbacks - the
+  number of times the peer used the "invalidate" callback to free a
+  memory region before the application de-registered the memory
+  region.

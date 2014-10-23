@@ -40,6 +40,8 @@
 
 #include <rdma/ib_mad.h>
 
+struct kobject *infiniband_kobj;
+
 struct ib_port {
 	struct kobject         kobj;
 	struct ib_device      *ibdev;
@@ -913,10 +915,14 @@ void ib_device_unregister_sysfs(struct ib_device *device)
 
 int ib_sysfs_setup(void)
 {
+	infiniband_kobj = kobject_create_and_add("infiniband", kernel_kobj);
+	if (!infiniband_kobj)
+		return -ENOMEM;
 	return class_register(&ib_class);
 }
 
 void ib_sysfs_cleanup(void)
 {
+	kobject_put(infiniband_kobj);
 	class_unregister(&ib_class);
 }
