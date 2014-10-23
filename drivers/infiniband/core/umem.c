@@ -45,12 +45,19 @@
 
 static struct ib_umem *peer_umem_get(struct ib_peer_memory_client *ib_peer_mem,
 				     struct ib_umem *umem, unsigned long addr,
-				     int dmasync)
+				     int dmasync, unsigned long peer_mem_flags)
 {
 	int ret;
 	const struct peer_memory_client *peer_mem = ib_peer_mem->peer_mem;
+	struct invalidation_ctx *invalidation_ctx = NULL;
 
 	umem->ib_peer_mem = ib_peer_mem;
+	if (peer_mem_flags & IB_PEER_MEM_INVAL_SUPP) {
+		ret = ib_peer_create_invalidation_ctx(ib_peer_mem, umem, &invalidation_ctx);
+		if (ret)
+			goto end;
+	}
+
 	/*
 	 * We always request write permissions to the pages, to force breaking of any CoW
 	 * during the registration of the MR. For read-only MRs we use the "force" flag to
@@ -61,7 +68,8 @@ static struct ib_umem *peer_umem_get(struct ib_peer_memory_client *ib_peer_mem,
 				  1, !umem->writable,
 				  &umem->sg_head,
 				  umem->peer_mem_client_context,
-				  0);
+				  invalidation_ctx ?
+				  invalidation_ctx->context_ticket : 0);
 	if (ret)
 		goto out;
 
@@ -85,6 +93,9 @@ put_pages:
 	peer_mem->put_pages(umem->peer_mem_client_context,
 					&umem->sg_head);
 out:
+	if (invalidation_ctx)
+		ib_peer_destroy_invalidation_ctx(ib_peer_mem, invalidation_ctx);
+end:
 	ib_put_peer_client(ib_peer_mem, umem->peer_mem_client_context);
 	kfree(umem);
 	return ERR_PTR(ret);
@@ -92,15 +103,19 @@ out:
 
 static void peer_umem_release(struct ib_umem *umem)
 {
-	const struct peer_memory_client *peer_mem =
-				umem->ib_peer_mem->peer_mem;
+	struct ib_peer_memory_client *ib_peer_mem = umem->ib_peer_mem;
+	const struct peer_memory_client *peer_mem = ib_peer_mem->peer_mem;
+	struct invalidation_ctx *invalidation_ctx = umem->invalidation_ctx;
+
+	if (invalidation_ctx)
+		ib_peer_destroy_invalidation_ctx(ib_peer_mem, invalidation_ctx);
 
 	peer_mem->dma_unmap(&umem->sg_head,
 			    umem->peer_mem_client_context,
 			    umem->context->device->dma_device);
 	peer_mem->put_pages(&umem->sg_head,
 			    umem->peer_mem_client_context);
-	ib_put_peer_client(umem->ib_peer_mem, umem->peer_mem_client_context);
+	ib_put_peer_client(ib_peer_mem, umem->peer_mem_client_context);
 	kfree(umem);
 }
 
@@ -127,6 +142,28 @@ static void __ib_umem_release(struct ib_device *dev, struct ib_umem *umem, int d
 	return;
 
 }
+
+int ib_umem_activate_invalidation_notifier(struct ib_umem *umem,
+					   umem_invalidate_func_t func,
+					   void *cookie)
+{
+	struct invalidation_ctx *invalidation_ctx = umem->invalidation_ctx;
+	int ret = 0;
+
+	mutex_lock(&umem->ib_peer_mem->lock);
+	if (invalidation_ctx->peer_invalidated) {
+		pr_err("ib_umem_activate_invalidation_notifier: pages were invalidated by peer\n");
+		ret = -EINVAL;
+		goto end;
+	}
+	invalidation_ctx->func = func;
+	invalidation_ctx->cookie = cookie;
+	/* from that point any pending invalidations can be called */
+end:
+	mutex_unlock(&umem->ib_peer_mem->lock);
+	return ret;
+}
+EXPORT_SYMBOL(ib_umem_activate_invalidation_notifier);
 
 /**
  * ib_umem_get - Pin and DMA map userspace memory.
@@ -187,11 +224,11 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 	if (peer_mem_flags & IB_PEER_MEM_ALLOW) {
 		struct ib_peer_memory_client *peer_mem_client;
 
-		peer_mem_client =  ib_get_peer_client(context, addr, size,
+		peer_mem_client =  ib_get_peer_client(context, addr, size, peer_mem_flags,
 						      &umem->peer_mem_client_context);
 		if (peer_mem_client)
 			return peer_umem_get(peer_mem_client, umem, addr,
-					dmasync);
+					dmasync, peer_mem_flags);
 	}
 
 	if (access & IB_ACCESS_ON_DEMAND) {
