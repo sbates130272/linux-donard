@@ -21,6 +21,7 @@ struct ib_peer_memory_client {
 
 enum ib_peer_mem_flags {
 	IB_PEER_MEM_ALLOW	= 1,
+	IB_PEER_MEM_INVAL_SUPP = (1<<1),
 };
 
 struct core_ticket {
@@ -30,7 +31,8 @@ struct core_ticket {
 };
 
 struct ib_peer_memory_client *ib_get_peer_client(struct ib_ucontext *context, unsigned long addr,
-						 size_t size, void **peer_client_context);
+						 size_t size, unsigned long peer_mem_flags,
+						 void **peer_client_context);
 
 void ib_put_peer_client(struct ib_peer_memory_client *ib_peer_client,
 			void *peer_client_context);

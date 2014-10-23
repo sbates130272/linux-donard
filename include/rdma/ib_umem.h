@@ -39,10 +39,21 @@
 #include <rdma/ib_peer_mem.h>
 
 struct ib_ucontext;
+struct ib_umem;
+
+typedef void (*umem_invalidate_func_t)(void *invalidation_cookie,
+					    struct ib_umem *umem,
+					    unsigned long addr, size_t size);
 
 struct invalidation_ctx {
 	struct ib_umem *umem;
 	u64 context_ticket;
+	umem_invalidate_func_t func;
+	void *cookie;
+	int peer_callback;
+	int inflight_invalidation;
+	int peer_invalidated;
+	struct completion comp;
 };
 
 struct ib_umem {
@@ -72,6 +83,9 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 			       unsigned long peer_mem_flags);
 void ib_umem_release(struct ib_umem *umem);
 int ib_umem_page_count(struct ib_umem *umem);
+int  ib_umem_activate_invalidation_notifier(struct ib_umem *umem,
+					    umem_invalidate_func_t func,
+					    void *cookie);
 
 #else /* CONFIG_INFINIBAND_USER_MEM */
 
@@ -86,6 +100,9 @@ static inline struct ib_umem *ib_umem_get(struct ib_ucontext *context,
 static inline void ib_umem_release(struct ib_umem *umem) { }
 static inline int ib_umem_page_count(struct ib_umem *umem) { return 0; }
 
+static inline int ib_umem_activate_invalidation_notifier(struct ib_umem *umem,
+							 umem_invalidate_func_t func,
+							 void *cookie) {return 0; }
 #endif /* CONFIG_INFINIBAND_USER_MEM */
 
 #endif /* IB_UMEM_H */
