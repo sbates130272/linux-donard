@@ -116,6 +116,11 @@ struct mlx4_ib_mr {
 	struct ib_mr		ibmr;
 	struct mlx4_mr		mmr;
 	struct ib_umem	       *umem;
+	atomic_t      invalidated;
+	struct completion invalidation_comp;
+	/* lock protects the live indication */
+	struct mutex lock;
+	int    live;
 };
 
 struct mlx4_ib_mw {
