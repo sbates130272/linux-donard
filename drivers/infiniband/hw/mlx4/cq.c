@@ -142,7 +142,7 @@ static int mlx4_ib_get_cq_umem(struct mlx4_ib_dev *dev, struct ib_ucontext *cont
 	int cqe_size = dev->dev->caps.cqe_size;
 
 	*umem = ib_umem_get(context, buf_addr, cqe * cqe_size,
-			    IB_ACCESS_LOCAL_WRITE, 1);
+			    IB_ACCESS_LOCAL_WRITE, 1, IB_PEER_MEM_ALLOW);
 	if (IS_ERR(*umem))
 		return PTR_ERR(*umem);
 
