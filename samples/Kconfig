@@ -21,6 +21,16 @@ config SAMPLE_KOBJECT
 
 	  If in doubt, say "N" here.
 
+config SAMPLE_PEER_MEMORY_CLIENT
+	tristate "Build peer memory sample client -- loadable modules only"
+	depends on INFINIBAND_USER_MEM && m
+	help
+	  This config option will allow you to build a peer memory
+	  example module that can be a very good reference for
+	  peer memory client plugin writers.
+
+	  If in doubt, say "N" here.
+
 config SAMPLE_KPROBES
 	tristate "Build kprobes examples -- loadable modules only"
 	depends on KPROBES && m
