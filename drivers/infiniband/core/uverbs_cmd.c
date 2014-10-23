@@ -326,6 +326,8 @@ ssize_t ib_uverbs_get_context(struct ib_uverbs_file *file,
 	INIT_LIST_HEAD(&ucontext->xrcd_list);
 	INIT_LIST_HEAD(&ucontext->rule_list);
 	ucontext->closing = 0;
+	ucontext->peer_mem_private_data = NULL;
+	ucontext->peer_mem_name = NULL;
 
 	resp.num_comp_vectors = file->device->num_comp_vectors;
 
