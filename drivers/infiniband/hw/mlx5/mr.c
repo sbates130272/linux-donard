@@ -1044,7 +1044,7 @@ struct ib_mr *mlx5_ib_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
 	mlx5_ib_dbg(dev, "start 0x%llx, virt_addr 0x%llx, length 0x%llx, access_flags 0x%x\n",
 		    start, virt_addr, length, access_flags);
 	umem = ib_umem_get(pd->uobject->context, start, length, access_flags,
-			   0);
+			   0, IB_PEER_MEM_ALLOW);
 	if (IS_ERR(umem)) {
 		mlx5_ib_dbg(dev, "umem get failed (%ld)\n", PTR_ERR(umem));
 		return (void *)umem;
