@@ -40,6 +40,11 @@
 
 struct ib_ucontext;
 
+struct invalidation_ctx {
+	struct ib_umem *umem;
+	u64 context_ticket;
+};
+
 struct ib_umem {
 	struct ib_ucontext     *context;
 	size_t			length;
@@ -55,6 +60,7 @@ struct ib_umem {
 	int             npages;
 	/* peer memory that manages this umem */
 	struct ib_peer_memory_client *ib_peer_mem;
+	struct invalidation_ctx *invalidation_ctx;
 	/* peer memory private context */
 	void *peer_mem_client_context;
 };
