@@ -42,6 +42,87 @@ static int ib_invalidate_peer_memory(void *reg_handle, u64 core_context)
 	return -ENOSYS;
 }
 
+static int ib_peer_insert_context(struct ib_peer_memory_client *ib_peer_client,
+				  void *context,
+				  u64 *context_ticket)
+{
+	struct core_ticket *core_ticket = kzalloc(sizeof(*core_ticket), GFP_KERNEL);
+
+	if (!core_ticket)
+		return -ENOMEM;
+
+	mutex_lock(&ib_peer_client->lock);
+	core_ticket->key = ib_peer_client->last_ticket++;
+	core_ticket->context = context;
+	list_add_tail(&core_ticket->ticket_list,
+		      &ib_peer_client->core_ticket_list);
+	*context_ticket = core_ticket->key;
+	mutex_unlock(&ib_peer_client->lock);
+
+	return 0;
+}
+
+/* Caller should be holding the peer client lock, specifically, the caller should hold ib_peer_client->lock */
+static int ib_peer_remove_context(struct ib_peer_memory_client *ib_peer_client,
+				  u64 key)
+{
+	struct core_ticket *core_ticket;
+
+	list_for_each_entry(core_ticket, &ib_peer_client->core_ticket_list,
+			    ticket_list) {
+		if (core_ticket->key == key) {
+			list_del(&core_ticket->ticket_list);
+			kfree(core_ticket);
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+/**
+** ib_peer_create_invalidation_ctx - creates invalidation context for a given umem
+** @ib_peer_mem: peer client to be used
+** @umem: umem struct belongs to that context
+** @invalidation_ctx: output context
+**/
+int ib_peer_create_invalidation_ctx(struct ib_peer_memory_client *ib_peer_mem, struct ib_umem *umem,
+				    struct invalidation_ctx **invalidation_ctx)
+{
+	int ret;
+	struct invalidation_ctx *ctx;
+
+	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+	if (!ctx)
+		return -ENOMEM;
+
+	ret = ib_peer_insert_context(ib_peer_mem, ctx,
+				     &ctx->context_ticket);
+	if (ret) {
+		kfree(ctx);
+		return ret;
+	}
+
+	ctx->umem = umem;
+	umem->invalidation_ctx = ctx;
+	*invalidation_ctx = ctx;
+	return 0;
+}
+
+/**
+ * ** ib_peer_destroy_invalidation_ctx - destroy a given invalidation context
+ * ** @ib_peer_mem: peer client to be used
+ * ** @invalidation_ctx: context to be invalidated
+ * **/
+void ib_peer_destroy_invalidation_ctx(struct ib_peer_memory_client *ib_peer_mem,
+				      struct invalidation_ctx *invalidation_ctx)
+{
+	mutex_lock(&ib_peer_mem->lock);
+	ib_peer_remove_context(ib_peer_mem, invalidation_ctx->context_ticket);
+	mutex_unlock(&ib_peer_mem->lock);
+
+	kfree(invalidation_ctx);
+}
 static int ib_memory_peer_check_mandatory(const struct peer_memory_client
 						     *peer_client)
 {
@@ -90,9 +171,12 @@ void *ib_register_peer_memory_client(const struct peer_memory_client *peer_clien
 	if (!ib_peer_client)
 		return NULL;
 
+	INIT_LIST_HEAD(&ib_peer_client->core_ticket_list);
+	mutex_init(&ib_peer_client->lock);
 	init_completion(&ib_peer_client->unload_comp);
 	kref_init(&ib_peer_client->ref);
 	ib_peer_client->peer_mem = peer_client;
+	ib_peer_client->last_ticket = 1;
 	/* Once peer supplied a non NULL callback it's an indication that invalidation support is
 	 * required for any memory owning.
 	 */
