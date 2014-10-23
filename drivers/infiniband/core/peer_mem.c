@@ -70,6 +70,14 @@ static int ib_memory_peer_check_mandatory(const struct peer_memory_client
 		return 0;
 }
 
+static void complete_peer(struct kref *kref)
+{
+	struct ib_peer_memory_client *ib_peer_client =
+		container_of(kref, struct ib_peer_memory_client, ref);
+
+	complete(&ib_peer_client->unload_comp);
+}
+
 void *ib_register_peer_memory_client(const struct peer_memory_client *peer_client,
 				     invalidate_peer_memory *invalidate_callback)
 {
@@ -82,6 +90,8 @@ void *ib_register_peer_memory_client(const struct peer_memory_client *peer_clien
 	if (!ib_peer_client)
 		return NULL;
 
+	init_completion(&ib_peer_client->unload_comp);
+	kref_init(&ib_peer_client->ref);
 	ib_peer_client->peer_mem = peer_client;
 	/* Once peer supplied a non NULL callback it's an indication that invalidation support is
 	 * required for any memory owning.
@@ -107,6 +117,45 @@ void ib_unregister_peer_memory_client(void *reg_handle)
 	list_del(&ib_peer_client->core_peer_list);
 	mutex_unlock(&peer_memory_mutex);
 
+	kref_put(&ib_peer_client->ref, complete_peer);
+	wait_for_completion(&ib_peer_client->unload_comp);
 	kfree(ib_peer_client);
 }
 EXPORT_SYMBOL(ib_unregister_peer_memory_client);
+
+struct ib_peer_memory_client *ib_get_peer_client(struct ib_ucontext *context, unsigned long addr,
+						 size_t size, void **peer_client_context)
+{
+	struct ib_peer_memory_client *ib_peer_client;
+	int ret;
+
+	mutex_lock(&peer_memory_mutex);
+	list_for_each_entry(ib_peer_client, &peer_memory_list, core_peer_list) {
+		ret = ib_peer_client->peer_mem->acquire(addr, size,
+						   context->peer_mem_private_data,
+						   context->peer_mem_name,
+						   peer_client_context);
+		if (ret > 0)
+			goto found;
+	}
+
+	ib_peer_client = NULL;
+
+found:
+	if (ib_peer_client)
+		kref_get(&ib_peer_client->ref);
+
+	mutex_unlock(&peer_memory_mutex);
+	return ib_peer_client;
+}
+EXPORT_SYMBOL(ib_get_peer_client);
+
+void ib_put_peer_client(struct ib_peer_memory_client *ib_peer_client,
+			void *peer_client_context)
+{
+	if (ib_peer_client->peer_mem->release)
+		ib_peer_client->peer_mem->release(peer_client_context);
+
+	kref_put(&ib_peer_client->ref, complete_peer);
+}
+EXPORT_SYMBOL(ib_put_peer_client);
