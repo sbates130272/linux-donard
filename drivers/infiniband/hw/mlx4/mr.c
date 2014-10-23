@@ -145,7 +145,7 @@ struct ib_mr *mlx4_ib_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
 		return ERR_PTR(-ENOMEM);
 
 	mr->umem = ib_umem_get(pd->uobject->context, start, length,
-			       access_flags, 0);
+			       access_flags, 0, IB_PEER_MEM_ALLOW);
 	if (IS_ERR(mr->umem)) {
 		err = PTR_ERR(mr->umem);
 		goto err_free;

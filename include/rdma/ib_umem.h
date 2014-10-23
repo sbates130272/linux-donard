@@ -36,6 +36,7 @@
 #include <linux/list.h>
 #include <linux/scatterlist.h>
 #include <linux/workqueue.h>
+#include <rdma/ib_peer_mem.h>
 
 struct ib_ucontext;
 
@@ -52,12 +53,17 @@ struct ib_umem {
 	struct sg_table sg_head;
 	int             nmap;
 	int             npages;
+	/* peer memory that manages this umem */
+	struct ib_peer_memory_client *ib_peer_mem;
+	/* peer memory private context */
+	void *peer_mem_client_context;
 };
 
 #ifdef CONFIG_INFINIBAND_USER_MEM
 
 struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
-			    size_t size, int access, int dmasync);
+			       size_t size, int access, int dmasync,
+			       unsigned long peer_mem_flags);
 void ib_umem_release(struct ib_umem *umem);
 int ib_umem_page_count(struct ib_umem *umem);
 
@@ -66,8 +72,9 @@ int ib_umem_page_count(struct ib_umem *umem);
 #include <linux/err.h>
 
 static inline struct ib_umem *ib_umem_get(struct ib_ucontext *context,
-					  unsigned long addr, size_t size,
-					  int access, int dmasync) {
+					     unsigned long addr, size_t size,
+					     int access, int dmasync,
+					     unsigned long peer_mem_flags) {
 	return ERR_PTR(-EINVAL);
 }
 static inline void ib_umem_release(struct ib_umem *umem) { }

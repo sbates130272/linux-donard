@@ -42,6 +42,66 @@
 
 #include "uverbs.h"
 
+static struct ib_umem *peer_umem_get(struct ib_peer_memory_client *ib_peer_mem,
+				     struct ib_umem *umem, unsigned long addr,
+				     int dmasync)
+{
+	int ret;
+	const struct peer_memory_client *peer_mem = ib_peer_mem->peer_mem;
+
+	umem->ib_peer_mem = ib_peer_mem;
+	/*
+	 * We always request write permissions to the pages, to force breaking of any CoW
+	 * during the registration of the MR. For read-only MRs we use the "force" flag to
+	 * indicate that CoW breaking is required but the registration should not fail if
+	 * referencing read-only areas.
+	 */
+	ret = peer_mem->get_pages(addr, umem->length,
+				  1, !umem->writable,
+				  &umem->sg_head,
+				  umem->peer_mem_client_context,
+				  0);
+	if (ret)
+		goto out;
+
+	umem->page_size = peer_mem->get_page_size
+					(umem->peer_mem_client_context);
+	if (umem->page_size <= 0)
+		goto put_pages;
+
+	umem->offset = addr & ((unsigned long)umem->page_size - 1);
+	ret = peer_mem->dma_map(&umem->sg_head,
+				umem->peer_mem_client_context,
+				umem->context->device->dma_device,
+				dmasync,
+				&umem->nmap);
+	if (ret)
+		goto put_pages;
+
+	return umem;
+
+put_pages:
+	peer_mem->put_pages(umem->peer_mem_client_context,
+					&umem->sg_head);
+out:
+	ib_put_peer_client(ib_peer_mem, umem->peer_mem_client_context);
+	kfree(umem);
+	return ERR_PTR(ret);
+}
+
+static void peer_umem_release(struct ib_umem *umem)
+{
+	const struct peer_memory_client *peer_mem =
+				umem->ib_peer_mem->peer_mem;
+
+	peer_mem->dma_unmap(&umem->sg_head,
+			    umem->peer_mem_client_context,
+			    umem->context->device->dma_device);
+	peer_mem->put_pages(&umem->sg_head,
+			    umem->peer_mem_client_context);
+	ib_put_peer_client(umem->ib_peer_mem, umem->peer_mem_client_context);
+	kfree(umem);
+}
 
 static void __ib_umem_release(struct ib_device *dev, struct ib_umem *umem, int dirty)
 {
@@ -119,9 +179,11 @@ static int check_lock_limit(int npages)
  * @size: length of region to pin
  * @access: IB_ACCESS_xxx flags for memory being pinned
  * @dmasync: flush in-flight DMA when the memory region is written
+ * @peer_mem_flags: IB_PEER_MEM_xxx flags for memory being used
  */
 struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
-			    size_t size, int access, int dmasync)
+			       size_t size, int access, int dmasync,
+			       unsigned long peer_mem_flags)
 {
 	struct ib_umem *umem;
 	struct page **page_list;
@@ -157,6 +219,15 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
 	 * "MW bind" can change permissions by binding a window.
 	 */
 	umem->writable  = !!(access & ~IB_ACCESS_REMOTE_READ);
+	if (peer_mem_flags & IB_PEER_MEM_ALLOW) {
+		struct ib_peer_memory_client *peer_mem_client;
+
+		peer_mem_client =  ib_get_peer_client(context, addr, size,
+						      &umem->peer_mem_client_context);
+		if (peer_mem_client)
+			return peer_umem_get(peer_mem_client, umem, addr,
+					dmasync);
+	}
 
 	/* We assume the memory is from hugetlb until proved otherwise */
 	umem->hugetlb   = 1;
@@ -278,6 +349,10 @@ void ib_umem_release(struct ib_umem *umem)
 	struct ib_ucontext *context = umem->context;
 	struct mm_struct *mm;
 	unsigned long diff;
+	if (umem->ib_peer_mem) {
+		peer_umem_release(umem);
+		return;
+	}
 
 	__ib_umem_release(umem->context->device, umem, 1);
 

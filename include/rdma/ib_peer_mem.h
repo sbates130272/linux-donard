@@ -13,6 +13,10 @@ struct ib_peer_memory_client {
 	struct completion unload_comp;
 };
 
+enum ib_peer_mem_flags {
+	IB_PEER_MEM_ALLOW	= 1,
+};
+
 struct ib_peer_memory_client *ib_get_peer_client(struct ib_ucontext *context, unsigned long addr,
 						 size_t size, void **peer_client_context);
 
