@@ -6,6 +6,10 @@ linux (3.18.0-1.1) vivid; urgency=low
 
   [ Upstream Kernel Changes ]
 
+  * rebase to v3.18-rc2
+
+  [ Upstream Kernel Changes ]
+
   * rebase to v3.18-rc1
     - LP: #1316518
     - LP: #1371591
