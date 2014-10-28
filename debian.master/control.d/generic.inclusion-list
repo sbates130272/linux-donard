@@ -91,6 +91,7 @@ drivers/scsi/vmw_pvscsi.ko
 drivers/scsi/hv_storvsc.ko
 drivers/scsi/virtio_scsi.ko
 drivers/target/target_core*.ko
+drivers/uio/uio.ko
 drivers/vhost/*
 drivers/video/fbdev/cirrusfb.ko
 drivers/video/fbdev/core/syscopyarea.ko
