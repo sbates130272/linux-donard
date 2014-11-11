@@ -1,4 +1,4 @@
-linux (3.18.0-3.3) vivid; urgency=low
+linux (3.18.0-3.4) vivid; urgency=low
 
   [ Andy Whitcroft ]
 
@@ -14,6 +14,7 @@ linux (3.18.0-3.3) vivid; urgency=low
   * SAUCE: AUFS -- aufs3-standalone.patch
   * ubuntu: AUFS -- update to 9d5c349d5c452170b8e813d86956f896a0aef170
   * [Config] updateconfigs following aufs3 update
+  * SAUCE: AUFS (no-squash): basic framework and update machinary -- part 2
 
   [ dann frazier ]
 
