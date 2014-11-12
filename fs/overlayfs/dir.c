@@ -48,6 +48,34 @@ struct dentry *ovl_lookup_temp(struct dentry *workdir, struct dentry *dentry)
 	return temp;
 }
 
+#ifdef CONFIG_OVERLAY_FS_V1
+static const char *ovl_whiteout_symlink = "(overlay-whiteout)";
+int ovl_do_whiteout_v1(struct inode *workdir,
+			      struct dentry *dentry)
+{
+	int err;
+
+	err = vfs_symlink(workdir, dentry, ovl_whiteout_symlink);
+	if (err)
+		return err;
+
+	err = vfs_setxattr(dentry, ovl_whiteout_xattr, "y", 1, 0);
+	if (err)
+		vfs_unlink(workdir, dentry, NULL);
+
+	if (err) {
+		/*
+		 * There's no way to recover from failure to whiteout.
+		 * What should we do?  Log a big fat error and... ?
+		 */
+		pr_err("overlayfs: ERROR - failed to whiteout '%s'\n",
+		       dentry->d_name.name);
+	}
+
+	return err;
+}
+#endif
+
 /* caller holds i_mutex on workdir */
 static struct dentry *ovl_whiteout(struct dentry *workdir,
 				   struct dentry *dentry)
@@ -60,7 +88,7 @@ static struct dentry *ovl_whiteout(struct dentry *workdir,
 	if (IS_ERR(whiteout))
 		return whiteout;
 
-	err = ovl_do_whiteout(wdir, whiteout);
+	err = ovl_do_whiteout(wdir, whiteout, dentry);
 	if (err) {
 		dput(whiteout);
 		whiteout = ERR_PTR(err);

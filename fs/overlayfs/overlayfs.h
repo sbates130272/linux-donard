@@ -18,6 +18,7 @@ enum ovl_path_type {
 	OVL_PATH_LOWER,
 };
 
+extern const char *ovl_whiteout_xattr;
 extern const char *ovl_opaque_xattr;
 
 static inline int ovl_do_rmdir(struct inode *dir, struct dentry *dentry)
@@ -117,11 +118,27 @@ static inline int ovl_do_rename(struct inode *olddir, struct dentry *olddentry,
 	return err;
 }
 
-static inline int ovl_do_whiteout(struct inode *dir, struct dentry *dentry)
+#ifdef CONFIG_OVERLAY_FS_V1
+extern int ovl_config_legacy(struct dentry *dentry);
+#else
+#define ovl_config_legacy(x) (0)
+#endif
+
+int ovl_do_whiteout_v1(struct inode *dir, struct dentry *dentry);
+
+static inline int ovl_do_whiteout_v2(struct inode *dir, struct dentry *dentry)
 {
 	int err = vfs_whiteout(dir, dentry);
 	pr_debug("whiteout(%pd2) = %i\n", dentry, err);
 	return err;
+}
+static inline int ovl_do_whiteout(struct inode *dir, struct dentry *dentry,
+				  struct dentry *ovlentry)
+{
+	if (ovl_config_legacy(ovlentry))
+		return ovl_do_whiteout_v1(dir, dentry);
+
+	return ovl_do_whiteout_v2(dir, dentry);
 }
 
 enum ovl_path_type ovl_path_type(struct dentry *dentry);
@@ -141,7 +158,7 @@ int ovl_want_write(struct dentry *dentry);
 void ovl_drop_write(struct dentry *dentry);
 bool ovl_dentry_is_opaque(struct dentry *dentry);
 void ovl_dentry_set_opaque(struct dentry *dentry, bool opaque);
-bool ovl_is_whiteout(struct dentry *dentry);
+bool ovl_is_whiteout(struct dentry *dentry, struct dentry *ovldentry);
 void ovl_dentry_update(struct dentry *dentry, struct dentry *upperdentry);
 struct dentry *ovl_lookup(struct inode *dir, struct dentry *dentry,
 			  unsigned int flags);
