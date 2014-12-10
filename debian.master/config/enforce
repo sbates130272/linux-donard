@@ -140,3 +140,9 @@ value CONFIG_I2C_DESIGNWARE_PLATFORM m | \
 
 # Required if /init is a shell script.
 value CONFIG_BINFMT_SCRIPT y
+
+# Newer udevs don't handle firmware loading, and having the userspace
+# fallback enabled in the kernel just results in big delays if we do
+# fall back.
+# See LP:1398458
+value CONFIG_FW_LOADER_USER_HELPER_FALLBACK n
