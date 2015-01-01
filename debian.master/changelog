@@ -6,6 +6,7 @@ linux (3.18.0-8.9) UNRELEASED; urgency=low
 
   [ Upstream Kernel Changes ]
 
+  * rebase to v3.19-rc2
   * rebase to v3.19-rc1
     - LP: #1173681
 
