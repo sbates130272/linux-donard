@@ -218,7 +218,7 @@ static struct dentry *aufs_lookup(struct inode *dir, struct dentry *dentry,
 	    && inode
 	    && S_ISDIR(inode->i_mode)) {
 		atomic_inc(&inode->i_count);
-		ret = d_materialise_unique(dentry, inode);
+		ret = d_splice_alias(inode, dentry);
 		if (!IS_ERR(ret))
 			ii_write_unlock(inode);
 	}
