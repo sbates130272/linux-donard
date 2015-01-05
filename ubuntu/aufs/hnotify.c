@@ -211,7 +211,7 @@ static int hn_gen_by_inode(char *name, unsigned int nlen, struct inode *inode,
 		AuDebugOn(!name);
 		au_iigen_dec(inode);
 		spin_lock(&inode->i_lock);
-		hlist_for_each_entry(d, &inode->i_dentry, d_alias) {
+		hlist_for_each_entry(d, &inode->i_dentry, d_u.d_alias) {
 			spin_lock(&d->d_lock);
 			dname = &d->d_name;
 			if (dname->len != nlen
@@ -378,7 +378,7 @@ static struct dentry *lookup_wlock_by_name(char *name, unsigned int nlen,
 
 	dentry = NULL;
 	spin_lock(&parent->d_lock);
-	list_for_each_entry(d, &parent->d_subdirs, d_u.d_child) {
+	list_for_each_entry(d, &parent->d_subdirs, d_child) {
 		/* AuDbg("%pd\n", d); */
 		spin_lock_nested(&d->d_lock, DENTRY_D_LOCK_NESTED);
 		dname = &d->d_name;
@@ -388,7 +388,7 @@ static struct dentry *lookup_wlock_by_name(char *name, unsigned int nlen,
 			au_digen_dec(d);
 		else
 			goto cont_unlock;
-		if (d_count(d)) {
+		if (au_dcount(d) > 0) {
 			dentry = dget_dlock(d);
 			spin_unlock(&d->d_lock);
 			break;

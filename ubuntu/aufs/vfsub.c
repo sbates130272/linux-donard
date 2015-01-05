@@ -472,7 +472,7 @@ int vfsub_flush(struct file *file, fl_owner_t id)
 
 	err = 0;
 	if (file->f_op->flush) {
-		if (!au_test_nfs(file->f_dentry->d_sb))
+		if (!au_test_nfs(file->f_path.dentry->d_sb))
 			err = file->f_op->flush(file, id);
 		else {
 			lockdep_off();
@@ -732,7 +732,7 @@ static void call_unlink(void *args)
 	struct dentry *d = a->path->dentry;
 	struct inode *h_inode;
 	const int stop_sillyrename = (au_test_nfs(d->d_sb)
-				      && d_count(d) == 1);
+				      && au_dcount(d) == 1);
 
 	IMustLock(a->dir);
 
