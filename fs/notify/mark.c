@@ -109,7 +109,6 @@ void fsnotify_put_mark(struct fsnotify_mark *mark)
 		mark->free_mark(mark);
 	}
 }
-EXPORT_SYMBOL(fsnotify_put_mark);
 
 /* Calculate mask of events for a list of marks */
 u32 fsnotify_recalc_mask(struct hlist_head *head)
@@ -203,7 +202,6 @@ void fsnotify_destroy_mark(struct fsnotify_mark *mark,
 	fsnotify_destroy_mark_locked(mark, group);
 	mutex_unlock(&group->mark_mutex);
 }
-EXPORT_SYMBOL(fsnotify_destroy_mark);
 
 /*
  * Destroy all marks in the given list. The marks must be already detached from
@@ -378,7 +376,6 @@ err:
 
 	return ret;
 }
-EXPORT_SYMBOL(fsnotify_add_mark);
 
 int fsnotify_add_mark(struct fsnotify_mark *mark, struct fsnotify_group *group,
 		      struct inode *inode, struct vfsmount *mnt, int allow_dups)
@@ -458,7 +455,6 @@ void fsnotify_init_mark(struct fsnotify_mark *mark,
 	atomic_set(&mark->refcnt, 1);
 	mark->free_mark = free_mark;
 }
-EXPORT_SYMBOL(fsnotify_init_mark);
 
 static int fsnotify_mark_destroy(void *ignored)
 {
