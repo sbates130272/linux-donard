@@ -38,6 +38,7 @@ linux (3.19.0-1.1) vivid; urgency=low
   * [Packaging] uploadnum should be the remainder of the version
     - LP: #1407755
   * [Packaging] handle dts directories
+    - LP: #1408004
   * [Config] follow move of arm64 dts' into vendor directories
 
   [ Upstream Kernel Changes ]
