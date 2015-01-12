@@ -15,6 +15,4 @@ do_tools_usbip  = true
 do_tools_cpupower = true
 do_tools_perf   = true
 
-dtb_files_generic += apm/apm-mustang.dtb
-dtb_files_generic += arm/foundation-v8.dtb
-dtb_files_generic += arm/rtsm_ve-aemv8a.dtb
+do_dtbs		= true
