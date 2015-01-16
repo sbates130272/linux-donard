@@ -704,6 +704,51 @@ static int ovl_rmdir(struct inode *dir, struct dentry *dentry)
 	return ovl_do_remove(dentry, true);
 }
 
+/*
+ * ovl_downgrade_whiteout -- build a symlink whiteout and install it
+ * over the existing chardev whiteout.
+ */
+static void ovl_downgrade_whiteout(struct dentry *old_upperdir,
+				   struct dentry *old)
+{
+	struct dentry *workdir = ovl_workdir(old);
+	struct dentry *legacy_whiteout = NULL;
+	struct dentry *whtdentry;
+	int err;
+
+	err = ovl_lock_rename_workdir(workdir, old_upperdir);
+	if (err)
+		goto out;
+
+	whtdentry = lookup_one_len(old->d_name.name, old_upperdir,
+				   old->d_name.len);
+	if (IS_ERR(whtdentry)) {
+		err = PTR_ERR(whtdentry);
+		goto out_unlock_workdir;
+	}
+
+	legacy_whiteout = ovl_whiteout(workdir, old);
+	if (IS_ERR(legacy_whiteout)) {
+		err = PTR_ERR(legacy_whiteout);
+		goto out_dput;
+	}
+
+	err = ovl_do_rename(workdir->d_inode, legacy_whiteout,
+			    old_upperdir->d_inode, whtdentry, 0);
+	if (err)
+		ovl_cleanup(workdir->d_inode, legacy_whiteout);
+
+out_dput:
+	dput(whtdentry);
+	dput(legacy_whiteout);
+out_unlock_workdir:
+	unlock_rename(workdir, old_upperdir);
+out:
+	if (err)
+		pr_err("overlayfs: dowgrade of '%pd2' whiteout failed (%i)\n",
+		       old, err);
+}
+
 static int ovl_rename2(struct inode *olddir, struct dentry *old,
 		       struct inode *newdir, struct dentry *new,
 		       unsigned int flags)
@@ -924,6 +969,9 @@ out_dput:
 	dput(newdentry);
 out_unlock:
 	unlock_rename(new_upperdir, old_upperdir);
+
+	if (!err && ovl_config_legacy(old) && flags & RENAME_WHITEOUT)
+		ovl_downgrade_whiteout(old_upperdir, old);
 out_revert_creds:
 	if (old_opaque || new_opaque) {
 		revert_creds(old_cred);

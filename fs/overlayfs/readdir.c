@@ -241,7 +241,7 @@ static int ovl_dir_mark_whiteouts(struct dentry *dir,
 	struct dentry *dentry;
 	const struct cred *old_cred;
 	struct cred *override_cred;
-	int type = (ovl_config_legacy(ovldir))? DT_LNK : DT_CHR;
+	int legacy = ovl_config_legacy(ovldir);
 
 	override_cred = prepare_creds();
 	if (!override_cred) {
@@ -260,7 +260,7 @@ static int ovl_dir_mark_whiteouts(struct dentry *dir,
 		if (p->is_cursor)
 			continue;
 
-		if (p->type != type)
+		if (p->type != DT_CHR && (!legacy || p->type != DT_LNK))
 			continue;
 
 		dentry = lookup_one_len(p->name, dir, p->len);

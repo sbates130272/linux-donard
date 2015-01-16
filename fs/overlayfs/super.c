@@ -279,7 +279,7 @@ bool ovl_is_whiteout_v2(struct dentry *dentry)
 bool ovl_is_whiteout(struct dentry *dentry, struct dentry *ovlentry)
 {
 	if (ovl_config_legacy(ovlentry))
-		return ovl_is_whiteout_v1(dentry);
+		return ovl_is_whiteout_v2(dentry) || ovl_is_whiteout_v1(dentry);
 
 	return ovl_is_whiteout_v2(dentry);
 }
