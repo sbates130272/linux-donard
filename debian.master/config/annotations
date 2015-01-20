@@ -2,9 +2,9 @@
 # ARCH: x86 arm powerpc
 
 #  not a thing
-CONFIG_USB_OHCI_HCD_PLATFORM			- flag<IGNORE>
-CONFIG_USB_EHCI_HCD_PLATFORM			- flag<IGNORE>
-CONFIG_USB_OHCI_HCD_PPC_OF_LE			- flag<IGNORE>
+#CONFIG_USB_OHCI_HCD_PLATFORM			- flag<IGNORE>
+#CONFIG_USB_EHCI_HCD_PLATFORM			- flag<IGNORE>
+#CONFIG_USB_OHCI_HCD_PPC_OF_LE			- flag<IGNORE>
 
 #CONFIG_64BIT					- flag<IGNORE>
 
@@ -18,8 +18,7 @@ set +pattern '(^|_)DEBUG(_|$)' ?type tristate	= n flag<DEBUG>
 #  exceptions
 CONFIG_DEBUG_FS					y note<required debug option>
 CONFIG_DEBUG_KERNEL				y note<required debug option>
-CONFIG_DEBUG_RODATA				y mark<ENFORCED>
-CONFIG_DEBUG_SET_MODULE_RONX			y mark<ENFORCED>
+CONFIG_DEBUG_RODATA				y 
 CONFIG_SLUB_DEBUG				y
 CONFIG_SCHED_DEBUG				y
 
@@ -47,11 +46,10 @@ CONFIG_SCOM_DEBUGFS                             p policy<{'powerpc-powerpc64-smp
 CONFIG_64BIT					?
 
 # Menu: Boot options
+#
 CONFIG_KEXEC					y
-CONFIG_CRASH_DUMP				y
+CONFIG_CRASH_DUMP				p mark<ENFORCED> policy<{'powerpc-powerpc-smp': 'n', 'powerpc-powerpc-e500mc': 'n', 'arm64': '-', '*': 'y'}> note<LP:1363180>
 CONFIG_CMDLINE                                  p policy<{'arm64': '"console=ttyAMA0"', 'armhf': '""'}>
-CONFIG_KEXEC                                    p policy<{'amd64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
-CONFIG_CRASH_DUMP                               p policy<{'amd64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc-powerpc64-emb': 'y', 'powerpc-powerpc64-smp': 'y', 'powerpc-powerpc-e500mc': 'n', 'powerpc-powerpc-smp': 'n', 'ppc64el': 'y'}>
 
 # Menu: Boot options >> Architecture: arm
 CONFIG_USE_OF					p policy<{'armhf': 'y'}>
@@ -130,7 +128,7 @@ CONFIG_PCIEPORTBUS				y
 CONFIG_PCIEAER					y
 CONFIG_PCIE_ECRC				n
 CONFIG_PCIEASPM					y
-CONFIG_HOTPLUG_PCI_PCIE				y
+CONFIG_HOTPLUG_PCI_PCIE				p mark<ENFORCED> policy<{'ppc64el': 'n', 'armhf': '-', '*': 'y'}> note<LP#1374440>
 CONFIG_PCIEAER_INJECT				n flag<TESTING>
 
 # Menu: Bus options (PCI etc.) >> PCI support >> PCI Express Port Bus support >> Default ASPM policy
@@ -253,7 +251,7 @@ set +tree-menu 'Device Drivers>>Block devices' !flag EXPERIMENTAL ?type tristate
 #
 CONFIG_BLK_DEV					y
 CONFIG_CISS_SCSI_TAPE				y
-CONFIG_BLK_DEV_UMEM m note<experimental NVRAM disk driver -- opt-in>
+CONFIG_BLK_DEV_UMEM				m note<experimental NVRAM disk driver -- opt-in>
 CONFIG_BLK_DEV_LOOP				y note<dependancy of boot essential>
 CONFIG_BLK_DEV_LOOP_MIN_COUNT			8
 CONFIG_DRBD_FAULT_INJECTION			n
@@ -262,7 +260,7 @@ CONFIG_CDROM_PKTCDVD_WCACHE			n mark<DANGEROUS>
 CONFIG_XEN_BLKDEV_FRONTEND			y note<not autoloadable -- XEN paravirt support>
 CONFIG_VIRTIO_BLK				y note<KVM paravirt support -- not autoloadable>
 CONFIG_BLK_DEV_HD				n note<very old disk device support> mark<ANCIENT>
-CONFIG_BLK_DEV_RBD m note<CEPH client side support>
+CONFIG_BLK_DEV_RBD				m note<CEPH client side support>
 CONFIG_MG_DISK_RES				0
 CONFIG_ZRAM_LZ4_COMPRESS			y
 
@@ -272,8 +270,8 @@ CONFIG_PARIDE_EPATC8				y
 # Menu: Device Drivers >> Block devices >> RAM block device support
 CONFIG_BLK_DEV_RAM				y note<dependancy of boot essential>
 CONFIG_BLK_DEV_RAM_COUNT			16
-CONFIG_BLK_DEV_RAM_SIZE				65536
-CONFIG_BLK_DEV_XIP n note<prevents use of HIGHMEM for ram disks>
+CONFIG_BLK_DEV_RAM_SIZE				65536 mark<ENFORCED> note<Ramdisk size should be a minimum of 64M> mark<REVIEW>
+CONFIG_BLK_DEV_XIP				n note<prevents use of HIGHMEM for ram disks>
 
 # Menu: Device Drivers >> Block devices >> Support for DASD devices
 
@@ -294,16 +292,17 @@ CONFIG_ARM_CCI					y
 CONFIG_ARM_CCN					y
 
 # Menu: Device Drivers >> Character devices
+#
 set +tree 'Device Drivers>>Character devices' ?flag EXPERIMENTAL ?type bool = n
 set +tree 'Device Drivers>>Character devices' ?flag EXPERIMENTAL ?type tristate = n
 set +tree 'Device Drivers>>Character devices' !flag EXPERIMENTAL ?type tristate = m
 #
-CONFIG_DEVKMEM					n mark<Security>
+CONFIG_DEVKMEM					n mark<SECURITY> mark<ENFORCED> note</dev/kmem is a large attack vector>
 CONFIG_TTY_PRINTK				y
 CONFIG_LP_CONSOLE				n
 CONFIG_HVC_XEN					y
 CONFIG_HVC_XEN_FRONTEND				y
-CONFIG_NVRAM					p policy<(arch powerpc &/ value y) | value m> note<boot essential on powerpc>
+CONFIG_NVRAM					p mark<ENFORCED> policy<{'amd64': 'm', 'armhf': 'm', 'i386': 'm', 'powerpc-powerpc-e500mc': 'y', 'powerpc-powerpc-smp': 'y'}> note<boot essential on powerpc LP:942193>
 CONFIG_MAX_RAW_DEVS				256
 CONFIG_HPET					y
 CONFIG_HPET_MMAP				y
@@ -493,14 +492,14 @@ CONFIG_GPIO_EM n note<h/w not encounted>
 CONFIG_GPIO_GENERIC_PLATFORM			p policy<{'armhf': 'y', 'arm64': 'y', '*', 'm'}>
 CONFIG_GPIO_LYNXPOINT				y
 CONFIG_GPIO_TWL6040				p policy<{'armhf': 'y', '*': 'm'}>
-CONFIG_GPIO_TWL4030				p policy<{'armhf': 'y', '*': 'm'}>
+CONFIG_GPIO_TWL4030				p mark<ENFORCED> policy<{'armhf': 'y', '*': 'm'}> note<LP:#921934>
 CONFIG_GPIO_SYSFS				y note<LP#1342153>
 
 # Menu: Device Drivers >> Generic Driver Options
 CONFIG_UEVENT_HELPER				y
 CONFIG_UEVENT_HELPER_PATH			""
-CONFIG_DEVTMPFS					y
-CONFIG_DEVTMPFS_MOUNT				y
+CONFIG_DEVTMPFS					y note<ENFORCED> note<upstart requirement>
+CONFIG_DEVTMPFS_MOUNT				y note<ENFORCED> note<upstart requirement>
 CONFIG_STANDALONE				p policy<(arch i386 amd64 &/ value n) | value y>
 CONFIG_PREVENT_FIRMWARE_BUILD			y
 CONFIG_FENCE_TRACE				n flag<DEBUG>
@@ -518,7 +517,7 @@ CONFIG_CMA_SIZE_SEL_MBYTES			y
 CONFIG_FW_LOADER				y note<core CPU firmware updater>
 CONFIG_FIRMWARE_IN_KERNEL			y
 CONFIG_EXTRA_FIRMWARE				""
-CONFIG_FW_LOADER_USER_HELPER_FALLBACK		n note<LP#1398458>
+CONFIG_FW_LOADER_USER_HELPER_FALLBACK		n mark<ENFORCED> note<LP#1398458>
 
 # Menu: Device Drivers >> Generic Dynamic Voltage and Frequency Scaling (DVFS) support
 CONFIG_PM_DEVFREQ				y
@@ -599,7 +598,7 @@ CONFIG_LOGO					n
 # Menu: Device Drivers >> Graphics support >> Console display driver support
 CONFIG_VGA_CONSOLE				y
 CONFIG_VGACON_SOFT_SCROLLBACK			n
-CONFIG_FRAMEBUFFER_CONSOLE			y note<boot essential for grub2 console>
+CONFIG_FRAMEBUFFER_CONSOLE			y mark<ENFORCED> note<boot essential for grub2 console>
 CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY	y
 CONFIG_FRAMEBUFFER_CONSOLE_ROTATION		y
 
@@ -613,7 +612,7 @@ CONFIG_DRM_RCAR_LVDS				y
 CONFIG_DRM_OMAP					n
 CONFIG_DRM_MSM_FBDEV				n
 CONFIG_DRM_MSM_REGISTER_LOGGING			y
-CONFIG_DRM_MGAG200				n note<CONFIG_DRM_MGAG200, experimental driver hangs boot on HP Proliant Gen8 LP:1042903>
+CONFIG_DRM_MGAG200				n mark<ENFORCED> note<CONFIG_DRM_MGAG200, experimental driver hangs boot on HP Proliant Gen8 LP:1042903>
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> DRM Support for Freescale i.MX
 
@@ -985,7 +984,7 @@ CONFIG_MOUSE_INPORT				n note<very old ISA based mouse support>
 # Menu: Device Drivers >> Input device support >> Generic input layer (needed for keyboard, mouse, ...) >> Miscellaneous devices
 CONFIG_INPUT_MISC				y
 CONFIG_INPUT_KXTJ9_POLLED_MODE			n
-CONFIG_INPUT_UINPUT				y
+CONFIG_INPUT_UINPUT				y mark<ENFORCED> note<LP:584812>
 
 # Menu: Device Drivers >> Input device support >> Generic input layer (needed for keyboard, mouse, ...) >> Mouse interface
 CONFIG_INPUT_MOUSEDEV				y
@@ -1058,10 +1057,11 @@ CONFIG_MMC_SDHCI_ESDHC_IMX			y
 CONFIG_MMC_DW_IDMAC				y
 
 # Menu: Device Drivers >> Macintosh device drivers
+#
 CONFIG_MACINTOSH_DRIVERS			y
 CONFIG_PMAC_SMU					p policy<{'powerpc': 'y'}>
 CONFIG_PMAC_MEDIABAY				p policy<{'powerpc': 'y'}>
-CONFIG_THERM_ADT746X				p policy<{'powerpc': 'y'}>
+CONFIG_THERM_ADT746X				p mark<ENFORCED> policy<{'powerpc-powerpc-smp': 'y'}> note<LP:#923094>
 
 # Menu: Device Drivers >> Macintosh device drivers >> Apple Desktop Bus (ADB) support
 CONFIG_ADB					p policy<{'powerpc': 'y'}>
@@ -1334,7 +1334,7 @@ set +tree 'Device Drivers>>MD' !flag EXPERIMENTAL ?type tristate = m
 CONFIG_MD					y
 
 # Menu: Device Drivers >> Multiple devices driver support (RAID and LVM) >> Device mapper support
-CONFIG_BLK_DEV_DM				y
+CONFIG_BLK_DEV_DM				y mark<ENFORCED> note<LP:#560717>
 CONFIG_DM_UEVENT				y
 
 # Menu: Device Drivers >> Multiple devices driver support (RAID and LVM) >> RAID support
@@ -1953,7 +1953,7 @@ CONFIG_SSB_DRIVER_GPIO				y
 
 # Menu: Device Drivers >> Sound card support
 CONFIG_SOUND					p policy<{'armhf': 'y', '*': 'm'}> note<not autoloadable on omap>
-CONFIG_SOUND_OSS_CORE_PRECLAIM			n note<LP#1105230>
+CONFIG_SOUND_OSS_CORE_PRECLAIM			n mark<ENFORCED> note<LP#1105230 LP#1385510>
 
 # Menu: Device Drivers >> Sound card support >> Advanced Linux Sound Architecture
 CONFIG_SND					p policy<{'armhf': 'y', '*': 'm'}> note<not autoloadable on omap>
@@ -2256,6 +2256,8 @@ CONFIG_DWC3_HOST_USB3_LPM_ENABLE                y
 CONFIG_USB_DWC3_DUAL_ROLE			y
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> EHCI HCD (USB 2.0) support
+CONFIG_USB_EHCI_HCD_PLATFORM                    p mark<ENFORCED> policy<{'amd64': 'y', 'arm64': 'm', 'armhf': 'n', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'm'}> note<Don't use the generic ehci/ohci code on omap, it doesn't work> mark<REVIEW>
+#
 CONFIG_USB_EHCI_HCD				y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_EHCI_ROOT_HUB_TT			y
 CONFIG_USB_EHCI_TT_NEWSCHED			y
@@ -2382,6 +2384,7 @@ CONFIG_VIRT_DRIVERS				y
 CONFIG_REGULATOR				y
 CONFIG_REGULATOR_FIXED_VOLTAGE			p policy<{'armhf': 'y', '*': 'm'}> note<boot essential on arm>
 CONFIG_REGULATOR_TI_ABB				p policy<{'armhf': 'y'}>
+CONFIG_REGULATOR_TWL4030			p mark<ENFORCED> policy<{'armhf-generic': 'y', '*': 'm'}> note<boot requisite for omap4>
 
 # Menu: Device Drivers >> Watchdog Timer Support
 CONFIG_WATCHDOG					y
@@ -2414,7 +2417,7 @@ CONFIG_THINKPAD_ACPI_HOTKEY_POLL		y
 CONFIG_XEN_BACKEND				y
 CONFIG_XEN_COMPAT_XENFS				y
 CONFIG_XEN_SYS_HYPERVISOR			y
-CONFIG_XEN_ACPI_PROCESSOR p policy<(arch i386 amd64 &/ value y) | value m> <boot essential on XEN host>
+CONFIG_XEN_ACPI_PROCESSOR			p mark<ENFORCED> policy<{'i386': 'y', 'amd64': 'y'}> <boot essential on XEN host>
 CONFIG_XEN_MCE_LOG				y
 
 # Menu: Device Drivers >> Xen driver support >> Xen memory balloon driver
@@ -2487,7 +2490,7 @@ CONFIG_CPU_LITTLE_ENDIAN			?
 # Menu: Executable file formats / Emulations
 CONFIG_BINFMT_ELF				y
 CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS		y
-CONFIG_BINFMT_SCRIPT				y
+CONFIG_BINFMT_SCRIPT				y mark<ENFORCED> note<required if 'init' is a shell script>
 CONFIG_BINFMT_MISC				m
 CONFIG_COREDUMP					y
 CONFIG_BINFMT_ELF                               y
@@ -2523,6 +2526,7 @@ CONFIG_FANOTIFY_ACCESS_PERMISSIONS		y
 CONFIG_QUOTA_NETLINK_INTERFACE			y
 CONFIG_FUSE_FS					y note<not autoloadable>
 CONFIG_OVERLAY_FS_V1				y
+CONFIG_TMPFS_POSIX_ACL				y mark<ENFORCED> note<some /dev nodes require POSIX ACLs, like /dev/dsp>
 
 # Menu: File systems >> Btrfs filesystem support
 CONFIG_BTRFS_FS_POSIX_ACL			y
@@ -2542,7 +2546,7 @@ CONFIG_FSCACHE_HISTOGRAM			n
 CONFIG_FSCACHE_OBJECT_LIST			n
 
 # Menu: File systems >> DOS/FAT/NT Filesystems
-CONFIG_VFAT_FS					y
+CONFIG_VFAT_FS					y mark<ENFORCED> note<needed on arm to ensure we can write the kernel when replacing>
 CONFIG_FAT_DEFAULT_CODEPAGE			437
 CONFIG_FAT_DEFAULT_IOCHARSET			"iso8859-1"
 CONFIG_NTFS_RW					n
@@ -2554,7 +2558,7 @@ CONFIG_JFS_STATISTICS				y
 
 # Menu: File systems >> Miscellaneous filesystems
 CONFIG_MISC_FILESYSTEMS				y
-CONFIG_ECRYPT_FS				y note<not autoloadable>
+CONFIG_ECRYPT_FS				y mark<ENFORCED> note<not autoloadable>
 CONFIG_ECRYPT_FS_MESSAGING			y
 CONFIG_LOGFS					n note<highly discouraged for use>
 CONFIG_EFIVAR_FS				y note<needed for variable EFI update>
@@ -2705,7 +2709,7 @@ CONFIG_ISCSI_IBFT_FIND                          p policy<{'amd64': 'y', 'i386': 
 CONFIG_ISCSI_IBFT                               p policy<{'amd64': 'm', 'i386': 'm'}>
 
 # Menu: Firmware Drivers >> EFI (Extensible Firmware Interface) Support
-CONFIG_EFI_VARS					p policy<{'amd64': 'y', 'arm64': 'y', 'i386': 'y'}> note<EFI boot requirement (d-i)>
+CONFIG_EFI_VARS					p mark<ENFORCED> policy<{'amd64': 'y', 'arm64': 'y', 'i386': 'y'}> note<EFI boot requirement (d-i) LP:#837332>
 CONFIG_EFI_VARS_PSTORE_DEFAULT_DISABLE		p policy<{'amd64': 'n', 'arm64': 'n', 'i386': 'n'}>
 CONFIG_EFI_RUNTIME_MAP				p policy<{'amd64': 'y', 'i386': 'y'}>
 
@@ -2741,12 +2745,13 @@ CONFIG_NUMA_BALANCING                           p policy<{'amd64': 'y', 'powerpc
 CONFIG_NUMA_BALANCING_DEFAULT_ENABLED           p policy<{'amd64': 'y', 'powerpc-powerpc64-smp': 'y', 'ppc64el': 'y'}>
 CONFIG_CHECKPOINT_RESTORE                       y
 CONFIG_SCHED_AUTOGROUP                          y
-CONFIG_SYSFS_DEPRECATED                         n
+CONFIG_SYSFS_DEPRECATED                         n mark<ENFORCED> note<ensure nothing is using these deprecated interfaces>
+CONFIG_SYSFS_DEPRECATED_V2                      p policy<{'*': '-'}> mark<ENFORCED> note<ensure nothing is using these deprecated interfaces>
 CONFIG_RELAY                                    y
 CONFIG_INIT_FALLBACK                            y
 CONFIG_CC_OPTIMIZE_FOR_SIZE                     n
 CONFIG_EMBEDDED                                 n
-CONFIG_COMPAT_BRK                               n
+CONFIG_COMPAT_BRK                               n mark<SECURITY> mark<ENFORCED> note<disables brk ASLR>
 CONFIG_SLUB_CPU_PARTIAL                         y
 CONFIG_SYSTEM_TRUSTED_KEYRING                   y
 CONFIG_PROFILING                                y
@@ -2754,6 +2759,8 @@ CONFIG_OPROFILE                                 p policy<{'amd64': 'm', 'armhf':
 CONFIG_OPROFILE_EVENT_MULTIPLEX                 p policy<{'amd64': 'n', 'i386': 'n'}>
 CONFIG_KPROBES                                  p policy<{'amd64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
 CONFIG_JUMP_LABEL                               y
+
+CONFIG_LOCALVERSION_AUTO			n mark<ENFORCED> note<triggers packaging failures>
 
 # Menu: General setup >> CPU/Task time and stats accounting
 CONFIG_BSD_PROCESS_ACCT				y
@@ -2872,7 +2879,7 @@ CONFIG_TREE_RCU                                 p policy<{'amd64-generic': 'y', 
 CONFIG_PREEMPT_RCU                              p policy<{'amd64-lowlatency': 'y', 'i386-lowlatency': 'y'}>
 
 # Menu: General setup >> Stack Protector buffer overflow detection
-CONFIG_CC_STACKPROTECTOR_REGULAR		y
+CONFIG_CC_STACKPROTECTOR_REGULAR		p mark<ENFORCED> policy<{'powerpc': '-', 'ppc64el': '-', '*': 'y'}>
 
 # Menu: General setup >> Stack Protector buffer overflow detection >> Architecture: arm
 
@@ -2897,9 +2904,9 @@ CONFIG_PANIC_ON_OOPS				n note<keep working if at all possible>
 CONFIG_PANIC_TIMEOUT				0
 CONFIG_STACKTRACE				y
 CONFIG_PROVIDE_OHCI1394_DMA_INIT		n
-CONFIG_STRICT_DEVMEM				y
-CONFIG_DEBUG_RODATA				y
-CONFIG_DEBUG_SET_MODULE_RONX			y
+CONFIG_STRICT_DEVMEM				y mark<ENFORCED>
+CONFIG_DEBUG_RODATA				p mark<ENFORCED> policy<{'amd64': 'y', 'i386': 'y'}>
+CONFIG_DEBUG_SET_MODULE_RONX			p mark<ENFORCED> policy<{'powerpc': '-', 'ppc64el': '-', '*': 'y'}>
 CONFIG_EARLY_PRINTK				y
 CONFIG_DEBUG_RODATA				p policy<{'amd64': 'y', 'i386': 'y'}>
 
@@ -2950,7 +2957,7 @@ CONFIG_FRAME_POINTER				y
 CONFIG_PAGE_OWNER				n
 
 # Menu: Kernel hacking >> Compile-time checks and compiler options >> Compile the kernel with debug info
-CONFIG_DEBUG_INFO                               y
+CONFIG_DEBUG_INFO                               y mark<ENFORCED> note<required for debug packages>
 CONFIG_DEBUG_INFO_REDUCED                       n
 CONFIG_DEBUG_INFO_SPLIT                         y
 CONFIG_DEBUG_INFO_DWARF4                        y
@@ -3304,7 +3311,7 @@ CONFIG_NET_CLS_IND				n flag<DEPRECATED>
 CONFIG_INET                                     y
 CONFIG_IP_MULTICAST                             y
 CONFIG_NET_IPGRE_BROADCAST                      y
-CONFIG_SYN_COOKIES                              y
+CONFIG_SYN_COOKIES                              y mark<ENFORCED>
 CONFIG_NET_FOU_IP_TUNNELS                       y
 CONFIG_INET_LRO                                 y
 CONFIG_TCP_MD5SIG                               y
@@ -3351,7 +3358,7 @@ CONFIG_IP_DCCP_CCID3				n
 
 # Menu: Networking support >> Networking options >> TCP/IP networking >> The IPv6 protocol
 CONFIG_IPV6_OPTIMISTIC_DAD			n flag<EXPERIMENTAL>
-CONFIG_IPV6					y note<core protocol>
+CONFIG_IPV6					y mark<ENFORCED> note<if this is a module we get a module load for every ipv6 packet>
 CONFIG_IPV6_ROUTER_PREF				y
 CONFIG_IPV6_ROUTE_INFO				y
 CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION	m note<enable IPv6 experimental features>
@@ -3465,7 +3472,7 @@ CONFIG_ACPI_PROCESSOR				y
 CONFIG_ACPI_THERMAL				y
 CONFIG_ACPI_CONTAINER				y note<dependancy ACPI_HOTPLUG_CPU>
 CONFIG_ACPI_HED					y
-CONFIG_ACPI_CUSTOM_METHOD			n note<Security: allows arbitrary execution>
+CONFIG_ACPI_CUSTOM_METHOD			p mark<ENFORCED> policy<{'amd64': 'n', 'i386': 'n'}> note<SECURITY: allows arbitrary execution>
 CONFIG_ACPI_NUMA				y
 CONFIG_ACPI_CUSTOM_DSDT_FILE			"" note<might allow hardware damage>
 CONFIG_ACPI_INITRD_TABLE_OVERRIDE		n
@@ -3732,7 +3739,7 @@ CONFIG_COMPACTION                               y
 CONFIG_MIGRATION                                y
 CONFIG_BOUNCE                                   y
 CONFIG_KSM                                      y
-CONFIG_DEFAULT_MMAP_MIN_ADDR                    p policy<{'amd64': '65536', 'arm64': '65536', 'armhf': '32768', 'i386': '65536', 'powerpc': '65536', 'ppc64el': '65536'}>
+CONFIG_DEFAULT_MMAP_MIN_ADDR                    p mark<ENFORCED> policy<{'amd64': '65536', 'arm64': '65536', 'armhf': '32768', 'i386': '65536', 'powerpc': '65536', 'ppc64el': '65536'}>
 CONFIG_MEMORY_FAILURE                           p policy<{'amd64': 'y', 'powerpc-powerpc64-smp': 'y', 'ppc64el': 'y'}>
 CONFIG_HWPOISON_INJECT                          p policy<{'amd64': 'm', 'powerpc-powerpc64-smp': 'm', 'ppc64el': 'm'}>
 CONFIG_TRANSPARENT_HUGEPAGE                     p policy<{'amd64': 'y', 'arm64': 'y', 'armhf-generic-lpae': 'y', 'i386': 'y', 'ppc64el': 'y'}>
@@ -3748,7 +3755,7 @@ CONFIG_ZBUD                                     y
 CONFIG_ZSMALLOC                                 y
 CONFIG_PGTABLE_MAPPING                          y
 CONFIG_FORCE_MAX_ZONEORDER                      p policy<{'arm64': '11', 'armhf-generic': '12', 'armhf-generic-lpae': '11', 'powerpc-powerpc64-emb': '13', 'powerpc-powerpc64-smp': '13', 'powerpc-powerpc-e500mc': '11', 'powerpc-powerpc-smp': '11', 'ppc64el': '9'}>
-CONFIG_SECCOMP                                  y
+CONFIG_SECCOMP                                  y mark<ENFORCED>
 CONFIG_XEN                                      p policy<{'amd64': 'y', 'arm64': 'y', 'armhf': 'n', 'i386': 'y'}>
 CONFIG_MATH_EMULATION                           p policy<{'i386': 'n', 'powerpc-powerpc64-emb': 'y', 'powerpc-powerpc-e500mc': 'y'}>
 CONFIG_NUMA                                     p policy<{'amd64': 'y', 'powerpc-powerpc64-emb': 'n', 'powerpc-powerpc64-smp': 'y', 'ppc64el': 'y'}>
@@ -3830,7 +3837,7 @@ CONFIG_KEXEC_FILE                               p policy<{'amd64': 'y'}>
 CONFIG_KEXEC_VERIFY_SIG                         p policy<{'amd64': 'y'}>
 CONFIG_KEXEC_JUMP                               p policy<{'amd64': 'y', 'i386': 'y'}>
 CONFIG_RANDOMIZE_BASE                           p policy<{'amd64': 'y', 'i386': 'y'}>
-CONFIG_COMPAT_VDSO                              p policy<{'amd64': 'n', 'i386': 'n'}>
+CONFIG_COMPAT_VDSO                              p mark<ENFORCED> policy<{'amd64': 'n', 'i386': 'n'}>
 
 # Menu: Processor type and features >> CPU microcode loading support >> Architecture: x86
 CONFIG_MICROCODE                                p policy<{'amd64': 'y', 'i386': 'y'}>
@@ -3949,7 +3956,7 @@ CONFIG_SECURITYFS				y
 CONFIG_INTEL_TXT				p policy<(arch i386 amd64 &/ value y) | value n)>
 
 # Menu: Security options >> Default security module
-CONFIG_DEFAULT_SECURITY_APPARMOR		y
+CONFIG_DEFAULT_SECURITY_APPARMOR		y mark<ENFORCED>
 
 # Menu: Security options >> Enable access key retention support
 CONFIG_KEYS					y
@@ -3960,15 +3967,14 @@ CONFIG_ENCRYPTED_KEYS				y
 CONFIG_KEYS_DEBUG_PROC_KEYS			y
 
 # Menu: Security options >> Enable different security models
-CONFIG_SECURITY					y mark<Subsystem>
-CONFIG_SECURITY                                 y
+CONFIG_SECURITY					y mark<ENFORCED>
 CONFIG_SECURITY_NETWORK                         y
 CONFIG_SECURITY_NETWORK_XFRM                    y
 CONFIG_SECURITY_PATH                            y
-CONFIG_LSM_MMAP_MIN_ADDR                        0
-CONFIG_SECURITY_SMACK                           y
+CONFIG_LSM_MMAP_MIN_ADDR                        0 mark<ENFORCED> mark<REVIEW>
+CONFIG_SECURITY_SMACK                           y mark<ENFORCED>
 CONFIG_SECURITY_SMACK_BRINGUP                   n
-CONFIG_SECURITY_YAMA                            y
+CONFIG_SECURITY_YAMA                            y mark<ENFORCED>
 CONFIG_SECURITY_YAMA_STACKED                    y
 
 # Menu: Security options >> Enable different security models >> AppArmor support
@@ -4001,7 +4007,7 @@ CONFIG_IMA_DEFAULT_HASH_SHA1			y
 CONFIG_IMA_NG_TEMPLATE				y
 
 # Menu: Security options >> Enable different security models >> NSA SELinux Support
-CONFIG_SECURITY_SELINUX                         y
+CONFIG_SECURITY_SELINUX                         y mark<ENFORCED>
 CONFIG_SECURITY_SELINUX_BOOTPARAM               y
 CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE         0
 CONFIG_SECURITY_SELINUX_DISABLE                 y
