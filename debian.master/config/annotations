@@ -326,11 +326,11 @@ CONFIG_DEVPTS_MULTIPLE_INSTANCES		y
 CONFIG_LEGACY_PTYS				y
 CONFIG_LEGACY_PTY_COUNT				0
 CONFIG_PPC_EPAPR_HV_BYTECHAN			n
+CONFIG_N_GSM					y note<LP#1404670>
 
 # Menu: Device Drivers >> Character devices >> Enable TTY >> Non-standard serial port support
 CONFIG_SERIAL_NONSTANDARD			y
 CONFIG_CYZ_INTR					n
-CONFIG_N_GSM					y note<LP#1404670>
 
 # Menu: Device Drivers >> Character devices >> Hardware Random Number Generator Core support
 CONFIG_HW_RANDOM				y
@@ -613,6 +613,8 @@ CONFIG_DRM_OMAP					n
 CONFIG_DRM_MSM_FBDEV				n
 CONFIG_DRM_MSM_REGISTER_LOGGING			y
 CONFIG_DRM_MGAG200				n mark<ENFORCED> note<CONFIG_DRM_MGAG200, experimental driver hangs boot on HP Proliant Gen8 LP:1042903>
+CONFIG_DRM_BOCHS				n note<LP#1378648>
+CONFIG_DRM_RCAR_HDMI				y
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> DRM Support for Freescale i.MX
 
@@ -645,8 +647,6 @@ CONFIG_DRM_MEDFIELD				y
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> NVIDIA Tegra DRM
 CONFIG_DRM_TEGRA_FBDEV				y
 CONFIG_DRM_TEGRA_STAGING			p policy<{'armhf': 'y'}>
-CONFIG_DRM_BOCHS				n note<LP#1378648>
-CONFIG_DRM_RCAR_HDMI				y
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> Nouveau (NVIDIA) cards
 CONFIG_NOUVEAU_DEBUG				5
@@ -1814,9 +1814,9 @@ CONFIG_RTC_DRV_XGENE				p policy<{'amd64': 'y', '*': 'm'}>
 # Menu: Device Drivers >> Remoteproc drivers
 
 # Menu: Device Drivers >> SCSI device support
-CONFIG_SCSI_MQ_DEFAULT				n
 
 # Menu: Device Drivers >> SCSI device support >> SCSI device support
+CONFIG_SCSI_MQ_DEFAULT				n
 CONFIG_SCSI					y
 CONFIG_SCSI_PROC_FS				y
 CONFIG_BLK_DEV_SD				y note<dependancy of boot essential>
@@ -2256,8 +2256,8 @@ CONFIG_DWC3_HOST_USB3_LPM_ENABLE                y
 CONFIG_USB_DWC3_DUAL_ROLE			y
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> EHCI HCD (USB 2.0) support
-CONFIG_USB_EHCI_HCD_PLATFORM                    p mark<ENFORCED> policy<{'amd64': 'y', 'arm64': 'm', 'armhf': 'n', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'm'}> note<Don't use the generic ehci/ohci code on omap, it doesn't work> mark<REVIEW>
 #
+CONFIG_USB_EHCI_HCD_PLATFORM                    p mark<ENFORCED> policy<{'amd64': 'y', 'arm64': 'm', 'armhf': 'n', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'm'}> note<Don't use the generic ehci/ohci code on omap, it doesn't work> mark<REVIEW>
 CONFIG_USB_EHCI_HCD				y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_EHCI_ROOT_HUB_TT			y
 CONFIG_USB_EHCI_TT_NEWSCHED			y
@@ -2526,7 +2526,6 @@ CONFIG_FANOTIFY_ACCESS_PERMISSIONS		y
 CONFIG_QUOTA_NETLINK_INTERFACE			y
 CONFIG_FUSE_FS					y note<not autoloadable>
 CONFIG_OVERLAY_FS_V1				y
-CONFIG_TMPFS_POSIX_ACL				y mark<ENFORCED> note<some /dev nodes require POSIX ACLs, like /dev/dsp>
 
 # Menu: File systems >> Btrfs filesystem support
 CONFIG_BTRFS_FS_POSIX_ACL			y
@@ -2669,6 +2668,7 @@ CONFIG_OCFS2_FS_STATS				y
 CONFIG_OCFS2_DEBUG_MASKLOG			y
 
 # Menu: File systems >> Pseudo filesystems
+CONFIG_TMPFS_POSIX_ACL				y mark<ENFORCED> note<some /dev nodes require POSIX ACLs, like /dev/dsp>
 CONFIG_SYSFS					y
 CONFIG_TMPFS					y
 CONFIG_HUGETLBFS				y
@@ -2759,7 +2759,6 @@ CONFIG_OPROFILE                                 p policy<{'amd64': 'm', 'armhf':
 CONFIG_OPROFILE_EVENT_MULTIPLEX                 p policy<{'amd64': 'n', 'i386': 'n'}>
 CONFIG_KPROBES                                  p policy<{'amd64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
 CONFIG_JUMP_LABEL                               y
-
 CONFIG_LOCALVERSION_AUTO			n mark<ENFORCED> note<triggers packaging failures>
 
 # Menu: General setup >> CPU/Task time and stats accounting
