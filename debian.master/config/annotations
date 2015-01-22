@@ -618,6 +618,7 @@ CONFIG_DRM_MSM_REGISTER_LOGGING			y
 CONFIG_DRM_MGAG200				n mark<ENFORCED> note<CONFIG_DRM_MGAG200, experimental driver hangs boot on HP Proliant Gen8 LP:1042903>
 CONFIG_DRM_BOCHS				n note<LP#1378648>
 CONFIG_DRM_RCAR_HDMI				y
+CONFIG_DRM_STI					n note<CONFIG_FW_LOADER_USER_HELPER_FALLBACK LP#1398458>
 
 # Menu: Device Drivers >> Graphics support >> Direct Rendering Manager >> Direct Rendering Manager (XFree86 4.1.0 and higher DRI support) >> DRM Support for Freescale i.MX
 
@@ -2236,7 +2237,7 @@ CONFIG_USB					y
 CONFIG_USB_ANNOUNCE_NEW_DEVICES			y
 CONFIG_USB_DYNAMIC_MINORS			y
 CONFIG_USB_DEFAULT_PERSIST			y
-CONFIG_USB_OTG					y note<triggers breakage on x86> mark<REVIEW> 
+CONFIG_USB_OTG					n note<triggers breakage on x86 LP:1047527, LP:1411295> 
 CONFIG_USB_OTG_WHITELIST			n note<OTG white/blacklists are disabled>
 CONFIG_USB_OTG_BLACKLIST_HUB			n note<OTG white/blacklists are disabled>
 CONFIG_USB_XHCI_HCD				y note<ensures USB 2.0/1.1 probe ordering>
