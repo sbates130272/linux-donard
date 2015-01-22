@@ -128,6 +128,7 @@ CONFIG_PCIEPORTBUS				y
 CONFIG_PCIEAER					y
 CONFIG_PCIE_ECRC				n
 CONFIG_PCIEASPM					y
+CONFIG_PCIEASPM_DEBUG                           y note<LP#1398544>
 CONFIG_HOTPLUG_PCI_PCIE				p mark<ENFORCED> policy<{'ppc64el': 'n', 'armhf': '-', '*': 'y'}> note<LP#1374440>
 CONFIG_PCIEAER_INJECT				n flag<TESTING>
 
@@ -167,6 +168,7 @@ CONFIG_HOTPLUG_PCI				y
 CONFIG_HOTPLUG_PCI_ACPI				y
 CONFIG_HOTPLUG_PCI_CPCI				y
 CONFIG_HOTPLUG_PCI_COMPAQ_NVRAM			y
+CONFIG_HOTPLUG_PCI_SHPC                         p policy<{'amd64': 'm', 'arm64': 'm', 'i386': 'm', 'powerpc': 'm', 'ppc64el': 'n'}> note<LP#1374440>
 
 # Menu: Cryptographic API
 set +tree-menu 'Cryptographic API' ?flag EXPERIMENTAL ?type bool = n
@@ -326,7 +328,7 @@ CONFIG_DEVPTS_MULTIPLE_INSTANCES		y
 CONFIG_LEGACY_PTYS				y
 CONFIG_LEGACY_PTY_COUNT				0
 CONFIG_PPC_EPAPR_HV_BYTECHAN			n
-CONFIG_N_GSM					y note<LP#1404670>
+CONFIG_N_GSM					m note<LP#1404670>
 
 # Menu: Device Drivers >> Character devices >> Enable TTY >> Non-standard serial port support
 CONFIG_SERIAL_NONSTANDARD			y
@@ -373,6 +375,7 @@ CONFIG_SERIAL_8250_PCI				y
 CONFIG_SERIAL_8250_NR_UARTS			48
 CONFIG_SERIAL_8250_RUNTIME_UARTS		32
 CONFIG_SERIAL_8250_EM				n
+CONFIG_SERIAL_8250_MT6577			y
 
 # Menu: Device Drivers >> Character devices >> Serial drivers >> 8250/16550 and compatible serial support >> Extended 8250/16550 serial driver options
 CONFIG_SERIAL_8250_EXTENDED			y
@@ -1492,6 +1495,9 @@ CONFIG_IGB_HWMON				y
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> Intel devices >> Intel(R) 10GbE PCI Express adapters support
 CONFIG_IXGBE_HWMON				y
 
+# Menu: Device Drivers >> Network device support >> Ethernet driver support >> Intel devices >> Intel(R) Ethernet Controller XL710 Family support
+CONFIG_I40E_FCOE				y
+
 # Menu: Device Drivers >> Network device support >> Ethernet driver support >> Marvell devices
 CONFIG_SKGE_GENESIS				y
 
@@ -1621,12 +1627,15 @@ CONFIG_ATH10K_DEBUGFS				y
 CONFIG_ATH10K_TRACING				y
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Atheros Wireless Cards >> Atheros 802.11n wireless cards support
-CONFIG_ATH9K_PCI				y
-CONFIG_ATH9K_AHB				y
-CONFIG_ATH9K_DEBUGFS				y
-CONFIG_ATH9K_STATION_STATISTICS			y
-CONFIG_ATH9K_WOW				y
-CONFIG_ATH9K_RFKILL				y
+CONFIG_ATH9K_PCI                                y
+CONFIG_ATH9K_AHB                                y
+CONFIG_ATH9K_DEBUGFS                            y
+CONFIG_ATH9K_STATION_STATISTICS                 y
+CONFIG_ATH9K_DYNACK                             n
+CONFIG_ATH9K_WOW                                y
+CONFIG_ATH9K_RFKILL                             y
+CONFIG_ATH9K_CHANNEL_CONTEXT                    y
+CONFIG_ATH9K_PCOEM                              y
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Atheros Wireless Cards >> Atheros mobile chipsets support
 CONFIG_ATH6KL_USB				m note<h/w specific experimental option -- opt-in>
@@ -1677,6 +1686,8 @@ CONFIG_IPW2200_PROMISCUOUS			y
 CONFIG_IPW2200_QOS				y
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi)
+CONFIG_IWLWIFI_BCAST_FILTERING                  n
+CONFIG_IWLWIFI_UAPSD                            n
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi) >> Debugging Options
 CONFIG_IWLWIFI_DEBUGFS				y
@@ -1810,6 +1821,7 @@ CONFIG_RTC_DRV_OMAP				p policy<{'armhf': 'y', '*': 'm'}>
 CONFIG_RTC_DRV_S3C				p policy<{'armhf': 'y', '*': 'm'}>
 CONFIG_RTC_DRV_PL031				p policy<{'armhf': 'y', '*': 'm'}>
 CONFIG_RTC_DRV_XGENE				p policy<{'amd64': 'y', '*': 'm'}>
+CONFIG_RTC_DRV_DS1374_WDT			y
 
 # Menu: Device Drivers >> Remoteproc drivers
 
@@ -2281,6 +2293,7 @@ CONFIG_USB_MUSB_DUAL_ROLE			y
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> OHCI HCD (USB 1.1) support
 CONFIG_USB_OHCI_HCD				y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_OHCI_HCD_PPC_OF_BE			p policy<{'powerpc': 'y', 'ppc64el': 'n'}>
+CONFIG_USB_OHCI_HCD_PPC_OF_LE			p policy<{'powerpc': 'n', 'ppc64el': 'n'}> mark<REVIEW>
 
 # Menu: Device Drivers >> USB support >> Support for Host-side USB >> USB DSL modem support
 
@@ -3615,7 +3628,7 @@ CONFIG_PM                                       y
 
 # Menu: Power management and ACPI options >> Device power management core functionality >> Power Management Debug Support
 CONFIG_PM_DEBUG					y
-CONFIG_PM_ADVANCED_DEBUG			y note<REVIEW REQUIRED>
+CONFIG_PM_ADVANCED_DEBUG			y mark<REVIEW>
 CONFIG_PM_TEST_SUSPEND				n
 CONFIG_DPM_WATCHDOG				n
 
