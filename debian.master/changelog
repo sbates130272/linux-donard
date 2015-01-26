@@ -7,6 +7,7 @@ linux (3.19.0-3.3) UNRELEASED; urgency=low
   [ Upstream Kernel Changes ]
 
   * rebase to v3.19-rc5
+  * rebase to v3.19-rc6
 
  -- Andy Whitcroft <apw@canonical.com>  Tue, 20 Jan 2015 19:08:44 +0000
 
