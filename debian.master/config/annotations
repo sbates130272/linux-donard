@@ -977,11 +977,12 @@ CONFIG_JOYSTICK_XPAD_LEDS			y
 #CONFIG_KEYBOARD_TWL4030 p policy<(arch armel armhf &/ value y) | value m> note<boot essential on OMAP4>
 CONFIG_INPUT_KEYBOARD				y
 CONFIG_KEYBOARD_ATKBD				y note<boot essential -- input device>
-CONFIG_KEYBOARD_IMX				n
 
 # Menu: Device Drivers >> Input device support >> Generic input layer (needed for keyboard, mouse, ...) >> Mice
 CONFIG_INPUT_MOUSE				y
 CONFIG_MOUSE_INPORT				n note<very old ISA based mouse support>
+CONFIG_MOUSE_ELAN_I2C_I2C			y
+CONFIG_MOUSE_ELAN_I2C_SMBUS			y
 
 # Menu: Device Drivers >> Input device support >> Generic input layer (needed for keyboard, mouse, ...) >> Mice >> PS/2 mouse
 
@@ -1622,7 +1623,6 @@ CONFIG_ATH5K_DEBUG                              n
 CONFIG_ATH5K_TRACER                             n
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Atheros Wireless Cards >> Atheros 802.11ac wireless cards support
-CONFIG_ATH10K_PCI				y
 CONFIG_ATH10K_DEBUG				n
 CONFIG_ATH10K_DEBUGFS				y
 CONFIG_ATH10K_TRACING				y
@@ -1688,7 +1688,7 @@ CONFIG_IPW2200_QOS				y
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi)
 CONFIG_IWLWIFI_BCAST_FILTERING                  n
-CONFIG_IWLWIFI_UAPSD                            n
+CONFIG_IWLWIFI_UAPSD                            n note<linus d6ca18de129fc4dd4374389561930b32820f35ff>
 
 # Menu: Device Drivers >> Network device support >> Wireless LAN >> Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi) >> Debugging Options
 CONFIG_IWLWIFI_DEBUGFS				y
@@ -1823,6 +1823,9 @@ CONFIG_RTC_DRV_S3C				p policy<{'armhf': 'y', '*': 'm'}>
 CONFIG_RTC_DRV_PL031				p policy<{'armhf': 'y', '*': 'm'}>
 CONFIG_RTC_DRV_XGENE				p policy<{'amd64': 'y', '*': 'm'}>
 CONFIG_RTC_DRV_DS1374_WDT			y
+CONFIG_RTC_DRV_PCF8523				p policy<{'armhf-generic': 'y', '*': 'm'}>
+CONFIG_RTC_DRV_OPAL				p policy<{'powerpc-powerpc64-smp': 'y', 'ppc64el-generic': 'y'}>
+CONFIG_RTC_DRV_MV				p policy<{'armhf': 'y'}>
 
 # Menu: Device Drivers >> Remoteproc drivers
 
@@ -1866,8 +1869,8 @@ CONFIG_SCSI_MPT3SAS_LOGGING			n
 CONFIG_SCSI_FLASHPOINT				y
 CONFIG_SCSI_IZIP_EPP16				n
 CONFIG_SCSI_IZIP_SLOW_CTR			n
-CONFIG_SCSI_IPR_TRACE				n
-CONFIG_SCSI_IPR_DUMP				n
+CONFIG_SCSI_IPR_TRACE				y note<LP:1343109>
+CONFIG_SCSI_IPR_DUMP				y note<LP:1343109>
 CONFIG_SCSI_DEBUG				m
 CONFIG_SCSI_VIRTIO				m note<tech preview of new feature>
 CONFIG_SCSI_GENERIC_NCR53C400			y
@@ -2110,10 +2113,7 @@ CONFIG_FT1000_PCMCIA                            p policy<{'amd64': 'm', 'i386': 
 CONFIG_FWTTY_MAX_TOTAL_PORTS                    64
 CONFIG_FWTTY_MAX_CARD_PORTS                     32
 CONFIG_MTD_SPINAND_ONDIEECC                     y
-CONFIG_LNET                                     p policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'powerpc': 'm'}>
-CONFIG_LNET_MAX_PAYLOAD                         p policy<{'amd64': '1048576', 'arm64': '1048576', 'armhf': '1048576', 'i386': '1048576', 'powerpc': '1048576'}>
-CONFIG_LNET_SELFTEST                            p policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'powerpc': 'm'}>
-CONFIG_LNET_XPRT_IB                             p policy<{'amd64': 'm', 'arm64': 'm', 'armhf': 'm', 'i386': 'm', 'powerpc': 'm'}>
+CONFIG_LNET_MAX_PAYLOAD                         1048576
 CONFIG_CRYPTO_SKEIN                             p policy<{'amd64': 'y'}>
 CONFIG_COMMON_CLK_XLNX_CLKWZRD                  p policy<{'arm64': 'n', 'armhf': 'n', 'powerpc-powerpc64-emb': 'n', 'powerpc-powerpc-e500mc': 'n'}>
 
@@ -2126,7 +2126,7 @@ CONFIG_COMEDI_DEFAULT_BUF_SIZE_KB		2048
 CONFIG_COMEDI_DEFAULT_BUF_MAXSIZE_KB		20480
 
 # Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi ISA and PC/104 drivers
-CONFIG_COMEDI_ISA_DRIVERS			m
+CONFIG_COMEDI_ISA_DRIVERS			y
 
 # Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi PCI drivers
 CONFIG_COMEDI_PCI_DRIVERS			m
@@ -2138,7 +2138,7 @@ CONFIG_COMEDI_PCMCIA_DRIVERS			m
 CONFIG_COMEDI_USB_DRIVERS			m
 
 # Menu: Device Drivers >> Staging drivers >> Data acquisition support (comedi) >> Comedi misc drivers
-CONFIG_COMEDI_MISC_DRIVERS			m
+CONFIG_COMEDI_MISC_DRIVERS			y
 
 # Menu: Device Drivers >> Staging drivers >> GCT GDM72xx WiMAX support
 CONFIG_WIMAX_GDM72XX_QOS			y
@@ -2240,6 +2240,7 @@ CONFIG_USB_DEFAULT_PERSIST			y
 CONFIG_USB_OTG					n note<triggers breakage on x86 LP:1047527, LP:1411295> 
 CONFIG_USB_OTG_WHITELIST			n note<OTG white/blacklists are disabled>
 CONFIG_USB_OTG_BLACKLIST_HUB			n note<OTG white/blacklists are disabled>
+CONFIG_USB_OTG_FSM				n note<selects USB_OTG LP:1047527, LP:1411295>>
 CONFIG_USB_XHCI_HCD				y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_UHCI_HCD				y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_HCD_BCMA				p policy<(arch armel armhf &/ value n) | value m> note<USB_{O,E}HCI_HCD_PLATFORM must be off on omap>
@@ -2772,7 +2773,7 @@ CONFIG_PROFILING                                y
 CONFIG_OPROFILE                                 p policy<{'amd64': 'm', 'armhf': 'm', 'i386': 'm', 'powerpc': 'm', 'ppc64el': 'm'}>
 CONFIG_OPROFILE_EVENT_MULTIPLEX                 p policy<{'amd64': 'n', 'i386': 'n'}>
 CONFIG_KPROBES                                  p policy<{'amd64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
-CONFIG_JUMP_LABEL                               y
+CONFIG_JUMP_LABEL                               p policy<{'armhf': 'n', '*': 'y'}> note<https://lists.ubuntu.com/archives/kernel-team/2014-October/049433.html> mark<REVIEW>
 CONFIG_LOCALVERSION_AUTO			n mark<ENFORCED> note<triggers packaging failures>
 
 # Menu: General setup >> CPU/Task time and stats accounting
@@ -2784,9 +2785,8 @@ CONFIG_TASK_XACCT				y
 CONFIG_TASK_IO_ACCOUNTING			y
 
 # Menu: General setup >> CPU/Task time and stats accounting >> Cputime accounting
-CONFIG_TICK_CPU_ACCOUNTING			p policy<{'arm64': 'y', 'armhf': 'n', 'i386': 'y', 'powerpc-powerpc64-emb': 'n', 'powerpc-powerpc-e500mc': 'y', 'powerpc-powerpc-smp': 'y', 'ppc64el': 'n'}>
-CONFIG_VIRT_CPU_ACCOUNTING_NATIVE		p policy<{'powerpc': 'y', 'ppc64el': 'n'}>
-CONFIG_VIRT_CPU_ACCOUNTING_GEN			p policy<{'amd64': 'y', 'armhf': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
+CONFIG_TICK_CPU_ACCOUNTING                      p policy<{'powerpc-powerpc64-emb': 'n', 'powerpc-powerpc64-smp': 'n', 'ppc64el': 'n', '*': 'y'}>
+CONFIG_VIRT_CPU_ACCOUNTING_NATIVE               p policy<{'powerpc-powerpc64-emb': 'y', 'powerpc-powerpc64-smp': 'y', 'ppc64el': 'y'}>
 
 # Menu: General setup >> Choose SLAB allocator
 CONFIG_SLUB					y
@@ -2876,7 +2876,7 @@ CONFIG_NET_NS					y
 # Menu: General setup >> RCU Subsystem
 CONFIG_TASKS_RCU				n
 CONFIG_RCU_USER_QS				p policy<{'amd64': 'y', 'armhf': 'n', 'powerpc': 'y', 'ppc64el': 'n'}>
-CONFIG_CONTEXT_TRACKING_FORCE			p policy<{'amd64': 'y', 'armhf': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
+CONFIG_CONTEXT_TRACKING_FORCE			n note<LP:1349028>
 CONFIG_RCU_FANOUT				p policy<{'amd64': '64', 'arm64': '64', 'armhf': '32', 'i386': '32', 'powerpc-powerpc64-emb': '32', 'powerpc-powerpc64-smp': '64', 'powerpc-powerpc-e500mc': '32', 'powerpc-powerpc-smp': '32', 'ppc64el': '64'}>
 CONFIG_RCU_FANOUT_LEAF				16
 CONFIG_RCU_FANOUT_EXACT				n
@@ -2908,8 +2908,7 @@ CONFIG_NO_HZ					y
 CONFIG_HIGH_RES_TIMERS				y
 
 # Menu: General setup >> Timers subsystem >> Timer tick handling
-CONFIG_NO_HZ_IDLE				p policy<{'amd64': 'n', 'arm64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc-powerpc64-emb': 'y', 'powerpc-powerpc64-smp': 'n', 'powerpc-powerpc-e500mc': 'y', 'powerpc-powerpc-smp': 'y', 'ppc64el': 'y'}> mark<REVIEW>
-CONFIG_NO_HZ_FULL				p policy<{'amd64': 'y', 'armhf': 'n', 'powerpc': 'y', 'ppc64el': 'n'}>
+CONFIG_NO_HZ_IDLE				y note<LP:1413968>
 
 # Menu: Kernel hacking
 CONFIG_MAGIC_SYSRQ				y
@@ -2972,7 +2971,7 @@ CONFIG_PAGE_OWNER				n
 # Menu: Kernel hacking >> Compile-time checks and compiler options >> Compile the kernel with debug info
 CONFIG_DEBUG_INFO                               y mark<ENFORCED> note<required for debug packages>
 CONFIG_DEBUG_INFO_REDUCED                       n
-CONFIG_DEBUG_INFO_SPLIT                         y
+CONFIG_DEBUG_INFO_SPLIT                         n note<LP:1413646 and LP:1413664>
 CONFIG_DEBUG_INFO_DWARF4                        y
 
 # Menu: Kernel hacking >> CoreSight Tracing Support >> Architecture: arm
@@ -3005,7 +3004,7 @@ CONFIG_DEBUG_BUGVERBOSE				y
 CONFIG_SCHEDSTATS				y
 CONFIG_SCHED_STACK_END_CHECK			y
 CONFIG_TIMER_STATS				y
-CONFIG_LATENCYTOP				y
+CONFIG_LATENCYTOP				n note<https://lists.ubuntu.com/archives/kernel-team/2014-July/045726.html>
 CONFIG_DEBUG_STRICT_USER_COPY_CHECKS		n
 
 # Menu: Kernel hacking >> Kernel debugging >> Fault-injection framework
