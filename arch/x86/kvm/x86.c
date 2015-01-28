@@ -7507,7 +7507,7 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
 				const struct kvm_memory_slot *old,
 				enum kvm_mr_change change)
 {
-
+	struct kvm_memory_slot *new;
 	int nr_mmu_pages = 0;
 
 	if ((mem->slot >= KVM_USER_MEM_SLOTS) && (change == KVM_MR_DELETE)) {
@@ -7526,6 +7526,10 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
 
 	if (nr_mmu_pages)
 		kvm_mmu_change_mmu_pages(kvm, nr_mmu_pages);
+
+	/* It's OK to get 'new' slot here as it has already been installed */
+	new = id_to_memslot(kvm->memslots, mem->slot);
+
 	/*
 	 * Write protect all pages for dirty logging.
 	 *
@@ -7535,8 +7539,8 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
 	 *
 	 * See the comments in fast_page_fault().
 	 */
-	if ((change != KVM_MR_DELETE) && (mem->flags & KVM_MEM_LOG_DIRTY_PAGES))
-		kvm_mmu_slot_remove_write_access(kvm, mem->slot);
+	if ((change != KVM_MR_DELETE) && (new->flags & KVM_MEM_LOG_DIRTY_PAGES))
+		kvm_mmu_slot_remove_write_access(kvm, new);
 }
 
 void kvm_arch_flush_shadow_all(struct kvm *kvm)
