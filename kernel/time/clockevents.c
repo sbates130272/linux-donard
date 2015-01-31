@@ -566,10 +566,6 @@ int clockevents_notify(unsigned long reason, void *arg)
 		ret = tick_broadcast_oneshot_control(reason);
 		break;
 
-	case CLOCK_EVT_NOTIFY_CPU_DYING:
-		tick_handover_do_timer(arg);
-		break;
-
 	case CLOCK_EVT_NOTIFY_SUSPEND:
 		tick_suspend();
 		tick_suspend_broadcast();
