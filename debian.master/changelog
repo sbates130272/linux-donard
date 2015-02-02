@@ -4,6 +4,10 @@ linux (3.19.0-4.4) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Upstream Kernel Changes ]
+
+  * rebase to v3.19-rc7
+
  -- Andy Whitcroft <apw@canonical.com>  Mon, 02 Feb 2015 17:03:07 +0200
 
 linux (3.19.0-3.3) vivid; urgency=low
