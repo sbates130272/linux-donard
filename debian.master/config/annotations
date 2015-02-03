@@ -3794,7 +3794,7 @@ CONFIG_UACCESS_WITH_MEMCPY			p policy<{'armhf': 'n'}>
 CONFIG_PPC_TRANSACTIONAL_MEM			p policy<{'powerpc': 'y', 'ppc64el': 'y'}>
 CONFIG_SWIOTLB					y
 CONFIG_PPC64_SUPPORTS_MEMORY_FAILURE		p policy<{'powerpc': 'y', 'ppc64el': 'y'}>
-CONFIG_FA_DUMP					p policy<{'powerpc': 'n', 'ppc64el': 'n'}>
+CONFIG_FA_DUMP					p policy<{'powerpc': 'y', 'ppc64el': 'y'}> note<LP:1415562>
 CONFIG_IRQ_ALL_CPUS				p policy<{'powerpc': 'n', 'ppc64el': 'y'}>
 CONFIG_PPC_SUBPAGE_PROT				p policy<{'ppc64el': 'y'}>
 CONFIG_PPC_DENORMALISATION			p policy<{'powerpc': 'n', 'ppc64el': 'y'}>
