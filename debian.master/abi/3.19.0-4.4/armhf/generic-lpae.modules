@@ -1384,6 +1384,7 @@ i2c-simtec
 i2c-sis5595
 i2c-sis630
 i2c-sis96x
+i2c-slave-eeprom
 i2c-smbus
 i2c-stub
 i2c-taos-evm
