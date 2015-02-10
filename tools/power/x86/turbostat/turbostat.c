@@ -1493,6 +1493,7 @@ int has_nehalem_turbo_ratio_limit(unsigned int family, unsigned int model)
 	case 0x37:	/* BYT */
 	case 0x4D:	/* AVN */
 	case 0x3D:	/* BDW */
+	case 0x47:	/* BDW */
 	case 0x4F:	/* BDX */
 	case 0x56:	/* BDX-DE */
 		return 1;
@@ -1609,6 +1610,7 @@ void rapl_probe(unsigned int family, unsigned int model)
 	case 0x45:	/* HSW */
 	case 0x46:	/* HSW */
 	case 0x3D:	/* BDW */
+	case 0x47:	/* BDW */
 		do_rapl = RAPL_PKG | RAPL_CORES | RAPL_CORE_POLICY | RAPL_GFX | RAPL_PKG_POWER_INFO;
 		break;
 	case 0x3F:	/* HSX */
@@ -1858,6 +1860,7 @@ int is_snb(unsigned int family, unsigned int model)
 	case 0x45:	/* HSW */
 	case 0x46:	/* HSW */
 	case 0x3D:	/* BDW */
+	case 0x47:	/* BDW */
 	case 0x4F:	/* BDX */
 	case 0x56:	/* BDX-DE */
 		return 1;
