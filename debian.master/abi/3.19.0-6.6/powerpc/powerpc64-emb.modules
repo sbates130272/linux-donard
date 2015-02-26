@@ -1352,7 +1352,6 @@ i2c-cros-ec-tunnel
 i2c-designware-core
 i2c-designware-pci
 i2c-designware-platform
-i2c-dev
 i2c-diolan-u2c
 i2c-dln2
 i2c-gpio

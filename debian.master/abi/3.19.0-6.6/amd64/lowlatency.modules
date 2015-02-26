@@ -1434,7 +1434,6 @@ i2c-cros-ec-tunnel
 i2c-designware-core
 i2c-designware-pci
 i2c-designware-platform
-i2c-dev
 i2c-diolan-u2c
 i2c-dln2
 i2c-gpio
@@ -1490,7 +1489,6 @@ i7300_edac
 i7300_idle
 i740fb
 i7core_edac
-i810
 i82092
 i82975x_edac
 i8k
@@ -3956,6 +3954,9 @@ uwb
 v4l2-common
 v4l2-dv-timings
 v4l2-mem2mem
+vboxguest
+vboxsf
+vboxvideo
 vcan
 vcnl4000
 ves1820
