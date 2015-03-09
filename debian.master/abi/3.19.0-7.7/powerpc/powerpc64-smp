@@ -6684,7 +6684,6 @@ EXPORT_SYMBOL vmlinux 0x3483c64d	agp_find_bridge
 EXPORT_SYMBOL vmlinux 0x3486c7b2	ip_cmsg_recv
 EXPORT_SYMBOL vmlinux 0x348bd080	mmc_can_erase
 EXPORT_SYMBOL vmlinux 0x348fd0fc	__scsi_device_lookup_by_target
-EXPORT_SYMBOL vmlinux 0x34953a3c	pnv_pci_to_phb_node
 EXPORT_SYMBOL vmlinux 0x349cba85	strchr
 EXPORT_SYMBOL vmlinux 0x34afd7de	key_link
 EXPORT_SYMBOL vmlinux 0x34dbbd54	pnv_cxl_ioda_msi_setup
@@ -8123,6 +8122,7 @@ EXPORT_SYMBOL vmlinux 0x87a33f42	vio_enable_interrupts
 EXPORT_SYMBOL vmlinux 0x87b65632	fb_blank
 EXPORT_SYMBOL vmlinux 0x87b98be2	skb_recv_datagram
 EXPORT_SYMBOL vmlinux 0x87d8c1ae	scm_detach_fds
+EXPORT_SYMBOL vmlinux 0x880335da	pnv_pci_get_phb_node
 EXPORT_SYMBOL vmlinux 0x880da1b1	_lv1_get_logical_partition_id
 EXPORT_SYMBOL vmlinux 0x881a3eca	nd_get_link
 EXPORT_SYMBOL vmlinux 0x882db37f	neigh_proc_dointvec
@@ -8597,7 +8597,6 @@ EXPORT_SYMBOL vmlinux 0xa47b2b60	netdev_state_change
 EXPORT_SYMBOL vmlinux 0xa480c04b	_lv1_gpu_context_attribute
 EXPORT_SYMBOL vmlinux 0xa484fc4f	tty_devnum
 EXPORT_SYMBOL vmlinux 0xa49908aa	start_tty
-EXPORT_SYMBOL vmlinux 0xa4a567c6	pnv_phb_to_cxl
 EXPORT_SYMBOL vmlinux 0xa4a94d26	find_next_bit_le
 EXPORT_SYMBOL vmlinux 0xa4b45ea5	out_of_line_wait_on_bit_lock
 EXPORT_SYMBOL vmlinux 0xa4b94fea	iowrite8_rep
@@ -10176,6 +10175,7 @@ EXPORT_SYMBOL vmlinux 0xfedcdb60	seq_hlist_next_percpu
 EXPORT_SYMBOL vmlinux 0xfede8bc8	bd_set_size
 EXPORT_SYMBOL vmlinux 0xfee90373	devm_iounmap
 EXPORT_SYMBOL vmlinux 0xfeebc7c4	__kfifo_from_user_r
+EXPORT_SYMBOL vmlinux 0xfef4a60b	pnv_phb_to_cxl_mode
 EXPORT_SYMBOL vmlinux 0xff1765c7	rtas_call
 EXPORT_SYMBOL vmlinux 0xff1e9dd8	seq_list_start
 EXPORT_SYMBOL vmlinux 0xff4eafdc	task_tgid_nr_ns

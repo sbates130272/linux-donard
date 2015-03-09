@@ -6092,7 +6092,6 @@ EXPORT_SYMBOL vmlinux 0x15de0cf9	of_scan_pci_bridge
 EXPORT_SYMBOL vmlinux 0x15f6bec1	kdb_current_task
 EXPORT_SYMBOL vmlinux 0x15fdaa3a	consume_skb
 EXPORT_SYMBOL vmlinux 0x160bd45c	rtas_token
-EXPORT_SYMBOL vmlinux 0x161a7fef	pnv_pci_to_phb_node
 EXPORT_SYMBOL vmlinux 0x162d594f	pagecache_get_page
 EXPORT_SYMBOL vmlinux 0x1648cb6d	blk_mq_run_queues
 EXPORT_SYMBOL vmlinux 0x165dcf4e	inet_get_local_port_range
@@ -8279,6 +8278,7 @@ EXPORT_SYMBOL vmlinux 0x97999817	rfkill_set_hw_state
 EXPORT_SYMBOL vmlinux 0x97bb6176	compat_ipv6_setsockopt
 EXPORT_SYMBOL vmlinux 0x97d3c334	pcie_get_readrq
 EXPORT_SYMBOL vmlinux 0x97f03d6f	vio_cmo_entitlement_update
+EXPORT_SYMBOL vmlinux 0x97fb39f1	pnv_pci_get_phb_node
 EXPORT_SYMBOL vmlinux 0x98187036	simple_link
 EXPORT_SYMBOL vmlinux 0x9829fc11	__kfifo_out_peek_r
 EXPORT_SYMBOL vmlinux 0x986e6135	fb_pad_unaligned_buffer
@@ -9316,7 +9316,6 @@ EXPORT_SYMBOL vmlinux 0xd7ea7094	nf_unregister_queue_handler
 EXPORT_SYMBOL vmlinux 0xd7f5f454	shrink_dcache_parent
 EXPORT_SYMBOL vmlinux 0xd809cb7c	xfrm_input_unregister_afinfo
 EXPORT_SYMBOL vmlinux 0xd828564f	mmc_wait_for_cmd
-EXPORT_SYMBOL vmlinux 0xd86e5dfb	pnv_phb_to_cxl
 EXPORT_SYMBOL vmlinux 0xd86f8341	dev_uc_del
 EXPORT_SYMBOL vmlinux 0xd89da37f	movable_zone
 EXPORT_SYMBOL vmlinux 0xd8a994eb	scsi_extd_sense_format
@@ -9871,6 +9870,7 @@ EXPORT_SYMBOL vmlinux 0xfae67b1f	cap_mmap_addr
 EXPORT_SYMBOL vmlinux 0xfaeaff91	vga_put
 EXPORT_SYMBOL vmlinux 0xfaf98462	bitrev32
 EXPORT_SYMBOL vmlinux 0xfb104769	pcibus_to_node
+EXPORT_SYMBOL vmlinux 0xfb3bc037	pnv_phb_to_cxl_mode
 EXPORT_SYMBOL vmlinux 0xfb4083b7	dquot_get_dqinfo
 EXPORT_SYMBOL vmlinux 0xfb4b01c9	mb_cache_entry_find_next
 EXPORT_SYMBOL vmlinux 0xfb508fcf	pcie_capability_write_word
