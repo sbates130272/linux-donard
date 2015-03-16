@@ -9,3 +9,4 @@ off of v3.19.1. It includes:
  *  PMEM patches from https://github.com/01org/prd
  *  A few custom RDMA and P2P patches for use with libdonard and
     donard_rdma
+ *  Yishai Hadas's IB Peer Memory patch set
