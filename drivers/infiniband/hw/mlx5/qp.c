@@ -652,7 +652,7 @@ static int create_user_qp(struct mlx5_ib_dev *dev, struct ib_pd *pd,
 
 	if (ucmd.buf_addr && qp->buf_size) {
 		qp->umem = ib_umem_get(pd->uobject->context, ucmd.buf_addr,
-				       qp->buf_size, 0, 0);
+				       qp->buf_size, 0, 0, IB_PEER_MEM_ALLOW);
 		if (IS_ERR(qp->umem)) {
 			mlx5_ib_dbg(dev, "umem_get failed\n");
 			err = PTR_ERR(qp->umem);

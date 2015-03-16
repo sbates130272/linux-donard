@@ -333,6 +333,8 @@ ssize_t ib_uverbs_get_context(struct ib_uverbs_file *file,
 	ucontext->tgid = get_task_pid(current->group_leader, PIDTYPE_PID);
 	rcu_read_unlock();
 	ucontext->closing = 0;
+	ucontext->peer_mem_private_data = NULL;
+	ucontext->peer_mem_name = NULL;
 
 #ifdef CONFIG_INFINIBAND_ON_DEMAND_PAGING
 	ucontext->umem_tree = RB_ROOT;

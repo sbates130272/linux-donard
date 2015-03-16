@@ -1002,7 +1002,7 @@ static struct ib_mr *mthca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
 		return ERR_PTR(-ENOMEM);
 
 	mr->umem = ib_umem_get(pd->uobject->context, start, length, acc,
-			       ucmd.mr_attrs & MTHCA_MR_DMASYNC);
+			       ucmd.mr_attrs & MTHCA_MR_DMASYNC, 0);
 
 	if (IS_ERR(mr->umem)) {
 		err = PTR_ERR(mr->umem);

@@ -36,9 +36,26 @@
 #include <linux/list.h>
 #include <linux/scatterlist.h>
 #include <linux/workqueue.h>
+#include <rdma/ib_peer_mem.h>
 
 struct ib_ucontext;
 struct ib_umem_odp;
+struct ib_umem;
+
+typedef void (*umem_invalidate_func_t)(void *invalidation_cookie,
+					    struct ib_umem *umem,
+					    unsigned long addr, size_t size);
+
+struct invalidation_ctx {
+	struct ib_umem *umem;
+	u64 context_ticket;
+	umem_invalidate_func_t func;
+	void *cookie;
+	int peer_callback;
+	int inflight_invalidation;
+	int peer_invalidated;
+	struct completion comp;
+};
 
 struct ib_umem {
 	struct ib_ucontext     *context;
@@ -55,6 +72,11 @@ struct ib_umem {
 	struct sg_table sg_head;
 	int             nmap;
 	int             npages;
+	/* peer memory that manages this umem */
+	struct ib_peer_memory_client *ib_peer_mem;
+	struct invalidation_ctx *invalidation_ctx;
+	/* peer memory private context */
+	void *peer_mem_client_context;
 };
 
 /* Returns the offset of the umem start relative to the first page. */
@@ -83,19 +105,24 @@ static inline size_t ib_umem_num_pages(struct ib_umem *umem)
 #ifdef CONFIG_INFINIBAND_USER_MEM
 
 struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
-			    size_t size, int access, int dmasync);
+			       size_t size, int access, int dmasync,
+			       unsigned long peer_mem_flags);
 void ib_umem_release(struct ib_umem *umem);
 int ib_umem_page_count(struct ib_umem *umem);
 int ib_umem_copy_from(void *dst, struct ib_umem *umem, size_t offset,
 		      size_t length);
+int  ib_umem_activate_invalidation_notifier(struct ib_umem *umem,
+					    umem_invalidate_func_t func,
+					    void *cookie);
 
 #else /* CONFIG_INFINIBAND_USER_MEM */
 
 #include <linux/err.h>
 
 static inline struct ib_umem *ib_umem_get(struct ib_ucontext *context,
-					  unsigned long addr, size_t size,
-					  int access, int dmasync) {
+					     unsigned long addr, size_t size,
+					     int access, int dmasync,
+					     unsigned long peer_mem_flags) {
 	return ERR_PTR(-EINVAL);
 }
 static inline void ib_umem_release(struct ib_umem *umem) { }
@@ -104,6 +131,10 @@ static inline int ib_umem_copy_from(void *dst, struct ib_umem *umem, size_t offs
 		      		    size_t length) {
 	return -EINVAL;
 }
+
+static inline int ib_umem_activate_invalidation_notifier(struct ib_umem *umem,
+							 umem_invalidate_func_t func,
+							 void *cookie) {return 0; }
 #endif /* CONFIG_INFINIBAND_USER_MEM */
 
 #endif /* IB_UMEM_H */
