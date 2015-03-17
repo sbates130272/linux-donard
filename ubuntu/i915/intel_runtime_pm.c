@@ -31,7 +31,7 @@
 
 #include "i915_drv.h"
 #include "intel_drv.h"
-#include <drm/i915_powerwell.h>
+#include <drm/i915_powerwell_bpo.h>
 
 /**
  * DOC: runtime pm
@@ -1601,7 +1601,7 @@ void intel_runtime_pm_enable(struct drm_i915_private *dev_priv)
 }
 
 /* Display audio driver power well request */
-int i915_request_power_well(void)
+int i915_bpo_request_power_well(void)
 {
 	struct drm_i915_private *dev_priv;
 
@@ -1613,10 +1613,10 @@ int i915_request_power_well(void)
 	intel_display_power_get(dev_priv, POWER_DOMAIN_AUDIO);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(i915_request_power_well);
+EXPORT_SYMBOL_GPL(i915_bpo_request_power_well);
 
 /* Display audio driver power well release */
-int i915_release_power_well(void)
+int i915_bpo_release_power_well(void)
 {
 	struct drm_i915_private *dev_priv;
 
@@ -1628,7 +1628,7 @@ int i915_release_power_well(void)
 	intel_display_power_put(dev_priv, POWER_DOMAIN_AUDIO);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(i915_release_power_well);
+EXPORT_SYMBOL_GPL(i915_bpo_release_power_well);
 
 /*
  * Private interface for the audio driver to get CDCLK in kHz.
@@ -1636,7 +1636,7 @@ EXPORT_SYMBOL_GPL(i915_release_power_well);
  * Caller must request power well using i915_request_power_well() prior to
  * making the call.
  */
-int i915_get_cdclk_freq(void)
+int i915_bpo_get_cdclk_freq(void)
 {
 	struct drm_i915_private *dev_priv;
 
@@ -1648,4 +1648,4 @@ int i915_get_cdclk_freq(void)
 
 	return intel_ddi_get_cdclk_freq(dev_priv);
 }
-EXPORT_SYMBOL_GPL(i915_get_cdclk_freq);
+EXPORT_SYMBOL_GPL(i915_bpo_get_cdclk_freq);
