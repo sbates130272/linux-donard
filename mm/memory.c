@@ -3533,7 +3533,7 @@ int follow_pfn(struct vm_area_struct *vma, unsigned long address,
 	spinlock_t *ptl;
 	pte_t *ptep;
 
-	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP)))
+	if (!(vma->vm_flags & (VM_IO | VM_PFNMAP | VM_MIXEDMAP)))
 		return ret;
 
 	ret = follow_pte(vma->vm_mm, address, &ptep, &ptl);
