@@ -13,6 +13,7 @@ drivers/ata/libahci_platform.ko
 drivers/block/nbd.ko
 drivers/block/floppy.ko
 drivers/block/cryptoloop.ko
+drivers/block/nvme.ko
 drivers/block/rbd.ko
 drivers/char/hangcheck-timer.ko
 drivers/char/hw_random/virtio-rng.ko
