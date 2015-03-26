@@ -3752,7 +3752,7 @@ CONFIG_COMPACTION                               y
 CONFIG_MIGRATION                                y
 CONFIG_BOUNCE                                   y
 CONFIG_KSM                                      y
-CONFIG_DEFAULT_MMAP_MIN_ADDR                    p mark<ENFORCED> policy<{'amd64': '65536', 'arm64': '65536', 'armhf': '32768', 'i386': '65536', 'powerpc': '65536', 'ppc64el': '65536'}>
+CONFIG_DEFAULT_MMAP_MIN_ADDR                    p mark<ENFORCED> policy<{'amd64': '65536', 'arm64': '32768', 'armhf': '32768', 'i386': '65536', 'powerpc': '65536', 'ppc64el': '65536'}> note<LP:1418140>
 CONFIG_MEMORY_FAILURE                           p policy<{'amd64': 'y', 'powerpc-powerpc64-smp': 'y', 'ppc64el': 'y'}>
 CONFIG_HWPOISON_INJECT                          p policy<{'amd64': 'm', 'powerpc-powerpc64-smp': 'm', 'ppc64el': 'm'}>
 CONFIG_TRANSPARENT_HUGEPAGE                     p policy<{'amd64': 'y', 'arm64': 'y', 'armhf-generic-lpae': 'y', 'i386': 'y', 'ppc64el': 'y'}>
