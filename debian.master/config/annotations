@@ -2774,7 +2774,6 @@ CONFIG_PROFILING                                y
 CONFIG_OPROFILE                                 p policy<{'amd64': 'm', 'armhf': 'm', 'i386': 'm', 'powerpc': 'm', 'ppc64el': 'm'}>
 CONFIG_OPROFILE_EVENT_MULTIPLEX                 p policy<{'amd64': 'n', 'i386': 'n'}>
 CONFIG_KPROBES                                  p policy<{'amd64': 'y', 'armhf': 'y', 'i386': 'y', 'powerpc': 'y', 'ppc64el': 'y'}>
-CONFIG_JUMP_LABEL                               p policy<{'armhf': 'n', '*': 'y'}> note<https://lists.ubuntu.com/archives/kernel-team/2014-October/049433.html> mark<REVIEW>
 CONFIG_LOCALVERSION_AUTO			n mark<ENFORCED> note<triggers packaging failures>
 
 # Menu: General setup >> CPU/Task time and stats accounting
