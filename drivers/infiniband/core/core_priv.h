@@ -38,6 +38,8 @@
 
 #include <rdma/ib_verbs.h>
 
+extern struct kobject *infiniband_kobj;
+
 int  ib_device_register_sysfs(struct ib_device *device,
 			      int (*port_callback)(struct ib_device *,
 						   u8, struct kobject *));
