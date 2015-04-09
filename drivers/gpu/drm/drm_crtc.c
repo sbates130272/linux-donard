@@ -4385,6 +4385,12 @@ bool drm_property_change_valid_get(struct drm_property *property,
 		} else {
 			return _object_find(property->dev, value, property->values[0]) != NULL;
 		}
+	} else {
+		int i;
+		for (i = 0; i < property->num_values; i++)
+			if (property->values[i] == value)
+				return true;
+		return false;
 	}
 }
 
