@@ -388,6 +388,10 @@ struct c4iw_mr {
 	struct c4iw_dev *rhp;
 	u64 kva;
 	struct tpt_attributes attr;
+	atomic_t invalidated;
+	struct completion invalidation_comp;
+	struct mutex live_lock;
+	int live;
 };
 
 static inline struct c4iw_mr *to_c4iw_mr(struct ib_mr *ibmr)
@@ -400,6 +404,10 @@ struct c4iw_mw {
 	struct c4iw_dev *rhp;
 	u64 kva;
 	struct tpt_attributes attr;
+	atomic_t invalidated;
+	struct completion invalidation_comp;
+	struct mutex live_lock;
+	int live;
 };
 
 static inline struct c4iw_mw *to_c4iw_mw(struct ib_mw *ibmw)
