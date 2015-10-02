@@ -184,7 +184,7 @@ static struct pmem_device *pmem_alloc(struct device *dev,
 	pmem->pfn_flags = PFN_DEV;
 	if (pmem_should_map_pages(dev)) {
 		pmem->virt_addr = (void __pmem *) devm_memremap_pages(dev, res,
-				&q->q_usage_counter, NULL);
+				&q->q_usage_counter, NULL, ARCH_MEMREMAP_PMEM);
 		pmem->pfn_flags |= PFN_MAP;
 	} else
 		pmem->virt_addr = (void __pmem *) devm_memremap(dev,
@@ -410,7 +410,7 @@ static int nvdimm_namespace_attach_pfn(struct nd_namespace_common *ndns)
 	q = pmem->pmem_queue;
 	devm_memunmap(dev, (void __force *) pmem->virt_addr);
 	pmem->virt_addr = (void __pmem *) devm_memremap_pages(dev, &nsio->res,
-			&q->q_usage_counter, altmap);
+			&q->q_usage_counter, altmap, ARCH_MEMREMAP_PMEM);
 	pmem->pfn_flags |= PFN_MAP;
 	if (IS_ERR(pmem->virt_addr)) {
 		rc = PTR_ERR(pmem->virt_addr);
